@@ -40,7 +40,7 @@ var gotPermission = function(result) {
 
         initRift();
 
-        chrome.usb.interruptTransfer(riftDevice, transfer, onEvent);
+        //chrome.usb.interruptTransfer(riftDevice, transfer, onEvent);
     });
   };
 
@@ -127,8 +127,8 @@ function beginReceiving() {
   var transferInfo = {
     "direction": "in",
     "endpoint" : 1,
-    "length": 256
-  };
+    "length": 64
+  };  // 62 is length of a single orientation block
 
   chrome.usb.bulkTransfer(riftDevice, transferInfo, bulkDataReceived);
 }
@@ -148,9 +148,76 @@ function bulkDataReceived(usbEvent) {
       buf = new Uint8Array(usbEvent.data);
       console.log("bulkDataReceived Buffer:", usbEvent.data.byteLength, buf);
 
+      parseBuffer(buf);
+
     }
     if (usbEvent.resultCode !== 0) {
       console.error("Error receiving from device", usbEvent.resultCode);
     }
   }
+}
+
+//-----------------------------------------
+
+var TEMPERATURE_SCALE = 0.01;
+var SENSOR_SCALE = 0.0001;
+
+var mSampleCount;
+var mTimestamp;
+var mLastCommandId;
+var mTemperature;
+var mMag = new THREE.Vector3();
+
+var samples = [];
+
+
+
+function parseBuffer(buffer) {
+  console.log("parseBuffer()");
+
+  if (buffer.length == 62) {
+    console.log("correct length");
+
+    mSampleCount = buffer[1];
+    mTimestamp = decodeUInt16(buffer, 2);
+    mLastCommandId = decodeUInt16(buffer, 4);
+    mTemperature = decodeSInt16(buffer, 6) * TEMPERATURE_SCALE;
+
+    var iterationCount = Math.min(3, mSampleCount);
+    for (var i = 0; i < iterationCount; i++) {
+      acc = unpackSensor(buffer, 8 + 16 * i).multiplyScalar(SENSOR_SCALE);
+      gyro = unpackSensor(buffer, 16 + 16 * i).multiplyScalar(SENSOR_SCALE);
+      samples[i] = {
+        mAcc: acc,
+        mGyro: gyro
+      };
+    }
+
+    mMag.set(
+      decodeSInt16(buffer, 56),
+      decodeSInt16(buffer, 58),
+      decodeSInt16(buffer, 60)
+    ).multiplyScalar(SENSOR_SCALE);
+
+    return true;
+  }
+  else {
+    console.error("incorrect length:", buffer.length);
+    return false;
+  }
+}
+
+function decodeUInt16(buffer, start) {
+  return (buffer[start+1] << 8 | buffer[start]) & 0xFFFF;
+}
+
+function decodeSInt16(buffer, start) {
+  return (buffer[start+1] << 8 | buffer[start]);
+}
+
+function unpackSensor(buffer, start) {
+  return new THREE.Vector3(
+    ( buffer[start+0] << 24 | (buffer[start+1] & 0xff) << 16 | (buffer[start+2] & 0xff) << 8 ) >> 11,
+    ( buffer[start+2] << 29 | (buffer[start+3] & 0xff) << 21 | (buffer[start+4] & 0xff) << 13 | (buffer[start+5] & 0xff) << 5 ) >> 11,
+    ( buffer[start+5] << 26 | (buffer[start+6] & 0xff) << 18 | (buffer[start+7] & 0xff) << 10 ) >> 11 );  
 }
