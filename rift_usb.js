@@ -78,7 +78,7 @@ function sendKeepAlive(keepAliveInterval) {
   console.log("sendKeepAlive()");
   var command = 0;
 
-  var ti = {
+  var transferInfo = {
     "requestType": "class",
     "recipient": "device",
     "direction": "out",
@@ -94,8 +94,10 @@ function sendKeepAlive(keepAliveInterval) {
       ]).buffer
   };
 
-  chrome.usb.controlTransfer(riftDevice, ti, sendKeepAliveCompleted);
+  chrome.usb.controlTransfer(riftDevice, transferInfo, sendKeepAliveCompleted);
 }
+
+var buf;
 
 function sendKeepAliveCompleted(usbEvent) {
   console.log("sendKeepAliveCompleted()");
@@ -106,8 +108,10 @@ function sendKeepAliveCompleted(usbEvent) {
 
   if (usbEvent) {
     if (usbEvent.data) {
-      var buf = new Uint8Array(usbEvent.data);
+      buf = new Uint8Array(usbEvent.data);
       console.log("sendCompleted Buffer:", usbEvent.data.byteLength, buf);
+
+      beginReceiving();
     }
     if (usbEvent.resultCode !== 0) {
       console.error("Error writing to device", usbEvent.resultCode);
@@ -117,42 +121,36 @@ function sendKeepAliveCompleted(usbEvent) {
 
 
 
+function beginReceiving() {
+  console.log("beginReceiving()");
 
-
-
-function sendCommand(request, val, idx) {
-  var ti = {
-    "requestType": "vendor",
-    "recipient": "interface",
-    "direction": "out",
-    "request": request,
-    "value": val,
-    "index": idx,
-    "data": new ArrayBuffer(0)
+  var transferInfo = {
+    "direction": "in",
+    "endpoint" : 1,
+    "length": 256
   };
-  chrome.usb.controlTransfer(riftDevice, ti, sendCompleted);
+
+  chrome.usb.bulkTransfer(riftDevice, transferInfo, bulkDataReceived);
 }
 
-function sendCompleted(usbEvent) {
+
+function bulkDataReceived(usbEvent) {
+  console.log("bulkDataReceived()");
+
+  console.log("usbEvent", usbEvent);
+
   if (chrome.runtime.lastError) {
-    console.error("sendCompleted Error:", chrome.runtime.lastError);
+    console.error("bulkDataReceived Error:", chrome.runtime.lastError);
   }
 
   if (usbEvent) {
     if (usbEvent.data) {
-      var buf = new Uint8Array(usbEvent.data);
-      console.log("sendCompleted Buffer:", usbEvent.data.byteLength, buf);
+      buf = new Uint8Array(usbEvent.data);
+      console.log("bulkDataReceived Buffer:", usbEvent.data.byteLength, buf);
+
     }
     if (usbEvent.resultCode !== 0) {
-      console.error("Error writing to device", usbEvent.resultCode);
+      console.error("Error receiving from device", usbEvent.resultCode);
     }
   }
 }
-
-
-/* some fun commands to try:
- *   sendCommand(1, 0x0104, 0x3002) // fast flashing
- *   sendCommand(1, 0x0104, 0xff02) // fastest flashing possible
- *   sendCommand(1, 0x0104, 0xff01) // normal speed flashing
- *   sendCommand(1, 0x0104, 0x0f00) // super slow flashing
- */
