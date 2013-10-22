@@ -8,6 +8,6 @@
       "scripts": ["background.js"]
     }
   },
-  "permissions": ["usb"],
+  "permissions": ["usb", "webview"],
   "optional_permissions": [ {"usbDevices": [{"vendorId": 10291, "productId": 1}]}]
 }

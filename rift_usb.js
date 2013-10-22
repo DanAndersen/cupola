@@ -99,6 +99,8 @@ function sendKeepAlive(keepAliveInterval) {
 
 var buf;
 
+var mConnected = false;
+
 function sendKeepAliveCompleted(usbEvent) {
   console.log("sendKeepAliveCompleted()");
 
@@ -111,7 +113,11 @@ function sendKeepAliveCompleted(usbEvent) {
       buf = new Uint8Array(usbEvent.data);
       console.log("sendCompleted Buffer:", usbEvent.data.byteLength, buf);
 
-      beginReceiving();
+      if (!mConnected) {
+        console.log("not already connected; connecting");
+        mConnected = true;
+        beginReceiving();
+      }
     }
     if (usbEvent.resultCode !== 0) {
       console.error("Error writing to device", usbEvent.resultCode);
@@ -120,6 +126,10 @@ function sendKeepAliveCompleted(usbEvent) {
 }
 
 
+
+var msgCounter = 0;
+var frequency = 0;
+var numSamples = 0;
 
 function beginReceiving() {
   console.log("beginReceiving()");
@@ -148,8 +158,25 @@ function bulkDataReceived(usbEvent) {
       buf = new Uint8Array(usbEvent.data);
       console.log("bulkDataReceived Buffer:", usbEvent.data.byteLength, buf);
 
-      parseBuffer(buf);
+      if(parseBuffer(buf)) {
+        console.log(bufferString);
 
+        msgCounter += mSampleCount;
+
+        updateOrientationFromMessage();
+
+        console.log("got orientation!");
+
+        numSamples++;
+
+        if (numSamples < 10) {
+          beginReceiving();
+        } else {
+          mConnected = false;
+        }
+      }
+
+      
     }
     if (usbEvent.resultCode !== 0) {
       console.error("Error receiving from device", usbEvent.resultCode);
@@ -170,13 +197,11 @@ var mMag = new THREE.Vector3();
 
 var samples = [];
 
-
+var bufferString;
 
 function parseBuffer(buffer) {
-  console.log("parseBuffer()");
 
   if (buffer.length == 62) {
-    console.log("correct length");
 
     mSampleCount = buffer[1];
     mTimestamp = decodeUInt16(buffer, 2);
@@ -199,10 +224,18 @@ function parseBuffer(buffer) {
       decodeSInt16(buffer, 60)
     ).multiplyScalar(SENSOR_SCALE);
 
+    bufferString = "TS: " + mTimestamp + ", Temp: " + mTemperature + "C" +
+      "\nAcc:\n" + samples[0].mAcc.x + " m/s^2\n" + samples[0].mAcc.y + " m/s^2\n" + samples[0].mAcc.z + " m/s^2" +
+      "\nGyro:\n" + samples[0].mGyro.x + " rad/s\n" + samples[0].mGyro.y + " rad/s\n" + samples[0].mGyro.z + " rad/s" +
+      "\nMag:\n" + mMag.x + "\n" + mMag.y + "\n" + mMag.x;
+
     return true;
   }
   else {
     console.error("incorrect length:", buffer.length);
+
+    bufferString = "PARSE ERROR";
+
     return false;
   }
 }
@@ -220,4 +253,11 @@ function unpackSensor(buffer, start) {
     ( buffer[start+0] << 24 | (buffer[start+1] & 0xff) << 16 | (buffer[start+2] & 0xff) << 8 ) >> 11,
     ( buffer[start+2] << 29 | (buffer[start+3] & 0xff) << 21 | (buffer[start+4] & 0xff) << 13 | (buffer[start+5] & 0xff) << 5 ) >> 11,
     ( buffer[start+5] << 26 | (buffer[start+6] & 0xff) << 18 | (buffer[start+7] & 0xff) << 10 ) >> 11 );  
+}
+
+//---------------------------------------
+
+function updateOrientationFromMessage() {
+  console.log("updateOrientationFromMessage()");
+  
 }
