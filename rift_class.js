@@ -156,12 +156,12 @@ var UsbAdapter = function() {
 			clearInterval(mKeepAliveIntervalId);	
 		}
 		
-		/*
+		
 		if (mPollSensorsIntervalId) {
 			console.log("stopping poll-sensors action");
 			clearInterval(mPollSensorsIntervalId);
 		}
-		*/
+		
 	};
 
 	var getPermissionObject = function() {
