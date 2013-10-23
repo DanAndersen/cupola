@@ -13,6 +13,7 @@ var UsbAdapter = function() {
 	var DEVICE_INFO = {"vendorId": RIFT_VENDOR_ID, "productId": RIFT_PRODUCT_ID};
 
 	var KEEP_ALIVE_INTERVAL = 10000;
+	var POLL_SENSORS_INTERVAL = 100;
 
 	var mPermissionObj = {permissions: [{'usbDevices': [DEVICE_INFO] }]};
 	var mHasPermission = false;
@@ -20,6 +21,7 @@ var UsbAdapter = function() {
 	var mRiftConnectionHandle;
 
 	var mKeepAliveIntervalId;
+	var mPollSensorsIntervalId;
 
 	var mConnected = true;
 
@@ -76,10 +78,47 @@ var UsbAdapter = function() {
 		chrome.usb.controlTransfer(mRiftConnectionHandle, mKeepAliveTransferInfo, sendKeepAliveCompleted);
 	};
 
+	//-----------------
+
+	var mPollSensorsTransferInfo = {
+    "direction": "in",
+    "endpoint" : 1,
+    "length": 64
+  };  // 62 is length of a single orientation block
+
+	var pollRiftSensors = function() {
+		console.log("pollRiftSensors()");
+		chrome.usb.bulkTransfer(mRiftConnectionHandle, mPollSensorsTransferInfo, sensorDataReceived);
+	};
+
+
+	var sensorDataReceived = function(usbEvent) {
+		console.log("sensorDataReceived()");
+	  console.log("usbEvent", usbEvent);
+
+	  if (chrome.runtime.lastError) {
+	    console.error("sensorDataReceived Error:", chrome.runtime.lastError);
+	  }
+
+	  if (usbEvent) {
+	    if (usbEvent.data) {
+	      buf = new Uint8Array(usbEvent.data);
+	      console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength, buf);   
+	    }
+	    if (usbEvent.resultCode !== 0) {
+	      console.error("Error receiving from device", usbEvent.resultCode);
+	    }
+	  }
+	};
+
+
+	//-------------------
+
 	var initRift = function() {
 	  console.log("initRift()");
 
 	  mKeepAliveIntervalId = setInterval(sendKeepAlive, KEEP_ALIVE_INTERVAL);
+	  mPollSensorsIntervalId = setInterval(pollRiftSensors, POLL_SENSORS_INTERVAL);
 	};
 
 	var gotPermission = function() {
@@ -117,6 +156,12 @@ var UsbAdapter = function() {
 			clearInterval(mKeepAliveIntervalId);	
 		}
 		
+		/*
+		if (mPollSensorsIntervalId) {
+			console.log("stopping poll-sensors action");
+			clearInterval(mPollSensorsIntervalId);
+		}
+		*/
 	};
 
 	var getPermissionObject = function() {
