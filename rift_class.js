@@ -13,7 +13,6 @@ var UsbAdapter = function() {
 	var DEVICE_INFO = {"vendorId": RIFT_VENDOR_ID, "productId": RIFT_PRODUCT_ID};
 
 	var KEEP_ALIVE_INTERVAL = 10000;
-	var POLL_SENSORS_INTERVAL = 100;
 
 	var mPermissionObj = {permissions: [{'usbDevices': [DEVICE_INFO] }]};
 	var mHasPermission = false;
@@ -21,9 +20,43 @@ var UsbAdapter = function() {
 	var mRiftConnectionHandle;
 
 	var mKeepAliveIntervalId;
-	var mPollSensorsIntervalId;
 
 	var mConnected = true;
+
+	var mRunning = false;
+
+	//-----------------------------
+	// worker
+	var mWorker = new Worker('usb_worker.js');
+	mWorker.addEventListener('message', onWorkerMessage, false);
+	mWorker.addEventListener('error', onWorkerError, false);
+	mWorker.postMessage({'cmd': 'start', 'msg': 'hello'});
+
+	function onWorkerError(e) {
+		console.log('WORKER ERROR: line ' + e.lineno + ' in ' + e.filename + ': ' + e.message);
+	}
+
+	function onWorkerMessage(e) {
+		console.log("onWorkerMessage()", e.data);
+		var data = e.data;
+
+		switch (data.cmd) {
+			case 'log':
+				console.log('Worker said: [' + data.msg + ']');
+				break;
+			case 'quat':
+				console.log('Received a quat from worker: ', data.quat);
+
+				if (mRunning) {
+					pollRiftSensors();
+					mRunning = false;
+				}
+
+				break;
+			default:
+				console.error('Unknown command: ' + data.msg);
+		}
+	}
 
 	//-----------------------------
 
@@ -102,8 +135,9 @@ var UsbAdapter = function() {
 
 	  if (usbEvent) {
 	    if (usbEvent.data) {
-	      buf = new Uint8Array(usbEvent.data);
-	      console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength, buf);   
+	      console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength);   
+
+	      mWorker.postMessage({'cmd':'process', 'msg': usbEvent.data}, [usbEvent.data]);
 	    }
 	    if (usbEvent.resultCode !== 0) {
 	      console.error("Error receiving from device", usbEvent.resultCode);
@@ -117,8 +151,15 @@ var UsbAdapter = function() {
 	var initRift = function() {
 	  console.log("initRift()");
 
-	  mKeepAliveIntervalId = setInterval(sendKeepAlive, KEEP_ALIVE_INTERVAL);
-	  mPollSensorsIntervalId = setInterval(pollRiftSensors, POLL_SENSORS_INTERVAL);
+	  if (!mRunning) {
+	  	mRunning = true;
+
+	  	// start up interval task to send keep-alive message
+	  	mKeepAliveIntervalId = setInterval(sendKeepAlive, KEEP_ALIVE_INTERVAL);
+
+	  	// start receiving data from rift
+	  	pollRiftSensors();
+	  }
 	};
 
 	var gotPermission = function() {
@@ -156,11 +197,7 @@ var UsbAdapter = function() {
 			clearInterval(mKeepAliveIntervalId);	
 		}
 		
-		
-		if (mPollSensorsIntervalId) {
-			console.log("stopping poll-sensors action");
-			clearInterval(mPollSensorsIntervalId);
-		}
+		mRunning = false;
 		
 	};
 
