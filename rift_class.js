@@ -136,7 +136,7 @@ var UsbAdapter = function() {
 
 	  if (usbEvent) {
 	    if (usbEvent.data) {
-	      console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength);   
+	      //console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength);   
 
 	      mWorker.postMessage({'cmd':'process', 'msg': usbEvent.data}, [usbEvent.data]);
 	    }

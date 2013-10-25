@@ -20,8 +20,8 @@ self.addEventListener('message', function(e) {
 		case 'process':
 			log('WORKER PROCESSING');
 
-			//process(data.msg);
-			mockProcess(data.msg);
+			process(data.msg);
+			//mockProcess(data.msg);
 
 			break;
 		default:
@@ -181,7 +181,7 @@ var MessageBodyFrame = function() {
 	};
 
 	var setAcceleration = function(a) {
-		mAcceleration.set(a);
+		mAcceleration.copy(a);
 	};
 
 	var getRotationRate = function() {
@@ -189,7 +189,7 @@ var MessageBodyFrame = function() {
 	}
 
 	var setRotationRate = function(rr) {
-		mRotationRate.set(rr);
+		mRotationRate.copy(rr);
 	};
 
 	var getMagneticField = function() {
@@ -197,7 +197,7 @@ var MessageBodyFrame = function() {
 	};
 
 	var setMagneticField = function(mf) {
-		mMagneticField.set(mf);
+		mMagneticField.copy(mf);
 	};
 
 	return {
@@ -230,24 +230,26 @@ var RiftOrientation = function() {
 	var updateOrientationFromTrackerMessage = function(msg) {
 		log("updateOrientationFromTrackerMessage()");
 		var iterations = msg.getSampleCount();
+		log("iterations: " + iterations);
 		if (msg.getSampleCount() > 3) {
-			log("a");
 			iterations = 3;
 			mSensors.setTimeDelta((msg.getSampleCount() - 2) * timeUnit);
 		} else {
-			log("b");
 			mSensors.setTimeDelta(timeUnit);
 		}
+		log("sensor timedelta: " + mSensors.getTimeDelta());
 
-		log("c");
 		for (var i = 0; i < iterations; i++) {
-			log("d");
+			log("iteration #" + i);
 			mSensors.setAcceleration(msg.getSamples()[i].mAcc);
 			mSensors.setRotationRate(msg.getSamples()[i].mGyro);
 			mSensors.setMagneticField(msg.getMag());
 			mSensors.setTemperature(msg.getTemperature());
+			log("\tacceleration: " + JSON.stringify(mSensors.getAcceleration()));
+			log("\tRotationRate: " + JSON.stringify(mSensors.getRotationRate()));
+			log("\tMagneticField: " + JSON.stringify(mSensors.getMagneticField()));
+			log("\tTemperature: " + mSensors.getTemperature());
 
-			log("e");
 			updateOrientationFromMessageBodyFrame(mSensors);
 
 			mSensors.setTimeDelta(timeUnit);
@@ -268,13 +270,18 @@ var RiftOrientation = function() {
 	var updateOrientationFromMessageBodyFrame = function(sensors) {
 		log("updateOrientationFromMessageBodyFrame()");
 
-		mAngV.set(sensors.getRotationRate());
+		mAngV.copy(sensors.getRotationRate());
+		log("mAngV before: " + JSON.stringify(mAngV));
 		mAngV.y *= YAW_MULT;
+		log("mAngV after: " + JSON.stringify(mAngV));
 
-		mA.set(sensors.getAcceleration()).multiplyScalar(sensors.getTimeDelta());
+		mA.copy(sensors.getAcceleration()).multiplyScalar(sensors.getTimeDelta());
 
-		dV.set(mAngV).multiplyScalar(sensors.getTimeDelta());
+		dV.copy(mAngV).multiplyScalar(sensors.getTimeDelta());
+		log("dV: " + JSON.stringify(dV));
+
 		var angle = dV.length();
+		log("angle: " + angle);
 
 		if (angle > 0.0) {
 			var halfa = angle * 0.5;
@@ -293,6 +300,8 @@ var RiftOrientation = function() {
 		var gravityEpsilon = 0.4;
 		var angVEpsilon = 3.0;
 
+		log("accelMagnitude: " + accelMagnitude);
+
 		if (ENABLE_GRAVITY && 
 			(Math.abs(accelMagnitude - 9.81) < gravityEpsilon) &&
 			(angVMagnitude < angVEpsilon)) {
@@ -306,16 +315,18 @@ var RiftOrientation = function() {
 				aw.x * GAIN,
 				1);
 
-			q1.set(feedback).multiply(mOrientation);
+			q1.copy(feedback).multiply(mOrientation);
 			q1.normalize();
 
-			var angle0 = Vector3.angle(yUp, aw);
+			var angle0 = angleBetween(yUp, aw);
+			log("angle0: " + angle0);
 
 			tempV = rotate(tempV, q2, mA);
-			var angle1 = Vector3.angle(yUp, tempV);
+			var angle1 = angleBetween(yUp, tempV);
+			log("angle1: " + angle1);
 
 			if(angle1 < angle0) {
-				mOrientation.set(q1);
+				mOrientation.copy(q1);
 			} else {
 
 				feedback2.set(
@@ -324,19 +335,20 @@ var RiftOrientation = function() {
 					-aw.x * GAIN,
 					1);
 
-				q2.set(feedback2).multiply(mOrientation);
+				q2.copy(feedback2).multiply(mOrientation);
 				q2.normalize();
 
 				tempV = rotate(tempV, q2, mA);
-				var angle2 = Vector3.angle(yUp, tempV);
-
+				var angle2 = angleBetween(yUp, tempV);
+				log("angle2: " + angle2);
 				if (angle2 < angle0) {
-					mOrientation.set(q2);
+					mOrientation.copy(q2);
 				}
 
 			}
 		}
 		log("finished updating orientation");
+		log("mOrientation: " + JSON.stringify(mOrientation));
 	};
 
 	var tempQ = new Quaternion();
@@ -344,14 +356,18 @@ var RiftOrientation = function() {
 
 	var rotate = function(result, q, v) {
 		log("rotate()");
-		tempQ.set(q);
-		invQ.set(q).inverse();
+		tempQ.copy(q);
+		invQ.copy(q).inverse();
 
 		tempQ.multiply(v.x, v.y, v.z, 1);
 		tempQ.multiply(invQ);
 
-		result.set(tempQ.x, tempQ.y, tempQ.z);
+		result.copy(tempQ.x, tempQ.y, tempQ.z);
 		return result;
+	};
+
+	var angleBetween = function(v1, v2) {
+		return Math.acos( v1.dot(v2) / ((v1.length())*(v2.length())) );
 	};
 
 	var getOrientation = function() {
