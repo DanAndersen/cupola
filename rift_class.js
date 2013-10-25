@@ -37,7 +37,6 @@ var UsbAdapter = function() {
 	}
 
 	function onWorkerMessage(e) {
-		console.log("onWorkerMessage()", e.data);
 		var data = e.data;
 
 		switch (data.cmd) {
@@ -45,11 +44,13 @@ var UsbAdapter = function() {
 				console.log('Worker said: [' + data.msg + ']');
 				break;
 			case 'quat':
-				console.log('Received a quat from worker: ', data.quat);
+				console.log('Received a quat from worker: ' + JSON.stringify(data));
+
+				updateQuatLabel(data);
 
 				if (mRunning) {
-					pollRiftSensors();
-					mRunning = false;
+					setTimeout(pollRiftSensors, 0);
+					//mRunning = false;
 				}
 
 				break;
@@ -127,7 +128,7 @@ var UsbAdapter = function() {
 
 	var sensorDataReceived = function(usbEvent) {
 		console.log("sensorDataReceived()");
-	  console.log("usbEvent", usbEvent);
+	  //console.log("usbEvent", usbEvent);
 
 	  if (chrome.runtime.lastError) {
 	    console.error("sensorDataReceived Error:", chrome.runtime.lastError);
@@ -153,6 +154,9 @@ var UsbAdapter = function() {
 
 	  if (!mRunning) {
 	  	mRunning = true;
+
+	  	// send first keep-alive to start up the connection
+	  	sendKeepAlive();
 
 	  	// start up interval task to send keep-alive message
 	  	mKeepAliveIntervalId = setInterval(sendKeepAlive, KEEP_ALIVE_INTERVAL);
@@ -232,7 +236,29 @@ requestButton.addEventListener('click', function() {
   });
 });
 
-//////////////////////////////////////
+
+
+var connectButton = document.getElementById("connect");
+connectButton.addEventListener('click', function() {
+	usb.connect();
+});
+
+var disconnectButton = document.getElementById("disconnect");
+disconnectButton.addEventListener('click', function() {
+	usb.disconnect();
+});
+
+
+
+var statDiv = document.getElementById("stats");
+
+function updateQuatLabel(quat) {
+	statDiv.innerText = JSON.stringify(quat);
+}
+
+
+
+
 
 
 

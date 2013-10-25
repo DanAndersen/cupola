@@ -20,7 +20,8 @@ self.addEventListener('message', function(e) {
 		case 'process':
 			log('WORKER PROCESSING');
 
-			process(data.msg);
+			//process(data.msg);
+			mockProcess(data.msg);
 
 			break;
 		default:
@@ -30,6 +31,19 @@ self.addEventListener('message', function(e) {
 }, false);
 
 //----------------------------------------
+
+
+var mCount = 0;
+
+function mockProcess(buffer) {
+	var quat = new Quaternion(mCount, mCount, mCount, mCount);
+	mCount++;
+	complete(quat);
+}
+
+
+
+
 
 
 
@@ -380,11 +394,10 @@ function complete(quat) {
 }
 
 function log(logMessage) {
-	self.postMessage({'cmd':'log', 'msg': logMessage});
+	//self.postMessage({'cmd':'log', 'msg': logMessage});
 }
 
 
 //----------------------------------------
-
 
 
