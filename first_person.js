@@ -220,25 +220,32 @@ function bridgeConfigUpdated(config){
   riftCam.setHMD(config);      
 }
 
+
+
+var quat = new THREE.Quaternion();
+var quatCam = new THREE.Quaternion();
+var xzVector = new THREE.Vector3(0, 0, 1);
+
 function bridgeOrientationUpdated(quatValues) {
-  console.log("bridgeOrientationUpdated", quatValues)
   // Do first-person style controls (like the Tuscany demo) using the rift and keyboard.
 
   // TODO: Don't instantiate new objects in here, these should be re-used to avoid garbage collection.
 
   // make a quaternion for the the body angle rotated about the Y axis.
-  var quat = new THREE.Quaternion();
+  //var quat = new THREE.Quaternion();
   quat.setFromAxisAngle(bodyAxis, bodyAngle);
 
   // make a quaternion for the current orientation of the Rift
-  var quatCam = new THREE.Quaternion(quatValues.x, quatValues.y, quatValues.z, quatValues.w);
+  //var quatCam = new THREE.Quaternion(quatValues.x, quatValues.y, quatValues.z, quatValues.w);
+  quatCam.set(quatValues.x, quatValues.y, quatValues.z, quatValues.w);
 
   // multiply the body rotation by the Rift rotation.
   quat.multiply(quatCam);
 
 
   // Make a vector pointing along the Z axis and rotate it accoring to the combined look/body angle.
-  var xzVector = new THREE.Vector3(0, 0, 1);
+  //var xzVector = new THREE.Vector3(0, 0, 1);
+  xzVector.set(0,0,1);
   xzVector.applyQuaternion(quat);
 
   // Compute the X/Z angle based on the combined look/body angle.  This will be used for FPS style movement controls
@@ -396,6 +403,5 @@ window.onload = function() {
 
 
 window.addEventListener('message', function(e) {
-  console.log("got quat message");
   bridgeOrientationUpdated(e.data);
 });

@@ -527,7 +527,9 @@ var RiftOrientation = function() {
 			(angVMagnitude < angVEpsilon)) {
 
 			yUp.set(0,1,0);
-			aw = rotate(aw, mOrientation, mA);
+
+			aw = mA.applyQuaternion(mOrientation);
+			//aw = rotate(aw, mOrientation, mA);
 
 			feedback.set(
 				-aw.z * GAIN,
@@ -541,7 +543,8 @@ var RiftOrientation = function() {
 			var angle0 = angleBetween(yUp, aw);
 			log("angle0: " + angle0);
 
-			tempV = rotate(tempV, q2, mA);
+			tempV = mA.applyQuaternion(q2);
+			//tempV = rotate(tempV, q2, mA);
 			var angle1 = angleBetween(yUp, tempV);
 			log("angle1: " + angle1);
 
@@ -558,7 +561,8 @@ var RiftOrientation = function() {
 				q2.copy(feedback2).multiply(mOrientation);
 				q2.normalize();
 
-				tempV = rotate(tempV, q2, mA);
+				tempV = mA.applyQuaternion(q2);
+				//tempV = rotate(tempV, q2, mA);
 				var angle2 = angleBetween(yUp, tempV);
 				log("angle2: " + angle2);
 				if (angle2 < angle0) {
@@ -569,22 +573,6 @@ var RiftOrientation = function() {
 		}
 		log("finished updating orientation");
 		log("mOrientation: " + JSON.stringify(mOrientation));
-	};
-
-	var tempQ = new THREE.Quaternion();
-	var invQ = new THREE.Quaternion();
-
-	var rotate = function(result, q, v) {
-		log("rotate()");
-		tempQ.copy(q);
-		invQ.copy(q).inverse();
-
-		tempQ.multiply(v.x, v.y, v.z, 1);
-		//tempQ.multiplyVector3(v, tempQ);
-		tempQ.multiply(invQ);
-
-		result.copy(tempQ.x, tempQ.y, tempQ.z);
-		return result;
 	};
 
 	var angleBetween = function(v1, v2) {
@@ -752,6 +740,5 @@ var onDisconnect = function() {
 var webview = document.getElementById("simWebview");
 
 var sendOrientationToSimulation = function(quat) {
-	console.log("sending quat");
 	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
 }
