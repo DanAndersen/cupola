@@ -3,55 +3,24 @@
   <head>
   </head>
   <body>
-    <div id="stats">Hello, world!</div>
-
-    <!-- <webview src="http://www.google.com/" style="width:640px; height:480px"></webview> -->
-
+    
     <button id="connect">Connect</button>
     <button id="disconnect">Disconnect</button>
 
     <button id="requestPermission">Request permissions</button>
 
-    <div class="button" id="toggle-render">toggle render mode</div> <div class="button" id="help">help</div>
-      <div id="help-text" style="display:none;">
-        <h1>Controls - stereo mode:</h1>
-        <section>
-          <div><label>forward:</label>W or UP</div>
-          <div><label>backward:</label>S or DOWN</div>
-        </section>
+    <div id="stats">Hello, world!</div>
 
-        <section>
-          <div><label>straif left:</label>A or LEFT</div>
-          <div><label>straif right:</label>D or RIGHT</div>
-        </section>
+    <webview id="simWebview" src="http://localhost:8090/chrome_app/first_person.html" style="width:640px; height:480px"></webview>
 
-        <section>
-          <div><label>turn left:</label>Q</div>
-          <div><label>turn right:</label>E</div>
-        </section>
+    
 
-        <section>
-          <div><label>jump:</label>SPACE</div>
-        </section>
-
-        <h1>Controls - perspective mode:</h1>
-        <section>
-          <div><label>orbit:</label>left-click + drag</div>
-          <div><label>pan:</label>right-click + drag</div>
-          <div><label>zoom:</label>mouse wheel</div>
-        </section>
-      </div>
-    </div>
-
-    <div id="viewport"></div>
 
 
 
     
     <script src='lib/three.min.js'></script>
-    <script src='lib/OrbitControls.js'></script>
-    <script src='lib/RiftCamera.js'></script>
-
+    
 
 
 
