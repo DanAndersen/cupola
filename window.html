@@ -5,27 +5,56 @@
   <body>
     <div id="stats">Hello, world!</div>
 
-    <webview src="http://www.google.com/" style="width:640px; height:480px"></webview>
-
-
-
-
-
-
+    <!-- <webview src="http://www.google.com/" style="width:640px; height:480px"></webview> -->
 
     <button id="connect">Connect</button>
     <button id="disconnect">Disconnect</button>
 
     <button id="requestPermission">Request permissions</button>
-    <div id="knob" style="display: none;"></div>
-    <script src='lib/three.min.js'></script>
 
-    <script src="lib/vector3-modified.js"></script>
-    <script src="lib/quaternion-modified.js"></script>
-    <script src="lib/euler-modified.js"></script>
+    <div class="button" id="toggle-render">toggle render mode</div> <div class="button" id="help">help</div>
+      <div id="help-text" style="display:none;">
+        <h1>Controls - stereo mode:</h1>
+        <section>
+          <div><label>forward:</label>W or UP</div>
+          <div><label>backward:</label>S or DOWN</div>
+        </section>
+
+        <section>
+          <div><label>straif left:</label>A or LEFT</div>
+          <div><label>straif right:</label>D or RIGHT</div>
+        </section>
+
+        <section>
+          <div><label>turn left:</label>Q</div>
+          <div><label>turn right:</label>E</div>
+        </section>
+
+        <section>
+          <div><label>jump:</label>SPACE</div>
+        </section>
+
+        <h1>Controls - perspective mode:</h1>
+        <section>
+          <div><label>orbit:</label>left-click + drag</div>
+          <div><label>pan:</label>right-click + drag</div>
+          <div><label>zoom:</label>mouse wheel</div>
+        </section>
+      </div>
+    </div>
+
+    <div id="viewport"></div>
+
+
+
+    
+    <script src='lib/three.min.js'></script>
+    <script src='lib/OrbitControls.js'></script>
+    <script src='lib/RiftCamera.js'></script>
+
+
+
 
     <script src="rift_class.js"></script>
-
-    <!-- <script src="rift_usb.js"></script> -->
   </body>
 </html>
