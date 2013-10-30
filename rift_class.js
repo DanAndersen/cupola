@@ -373,66 +373,41 @@ var TrackerMessage = function() {
 
 //---------------------------------
 
-var MessageBodyFrame = function() {
-	var mAcceleration = new THREE.Vector3();
-	var mRotationRate = new THREE.Vector3();
-	var mMagneticField = new THREE.Vector3();
-	var mTemperature;
-	var mTimeDelta;
 
-	var getTimeDelta = function() {
-		return mTimeDelta;
-	};
-
-	var setTimeDelta = function(td) {
-		mTimeDelta = td;
-	};
-
-	var getTemperature = function() {
-		return mTemperature;
-	};
-
-	var setTemperature = function(t) {
-		mTemperature = t;
-	};
-
-	var getAcceleration = function() {
-		return mAcceleration;
-	};
-
-	var setAcceleration = function(a) {
-		mAcceleration.copy(a);
-	};
-
-	var getRotationRate = function() {
-		return mRotationRate;
-	}
-
-	var setRotationRate = function(rr) {
-		mRotationRate.copy(rr);
-	};
-
-	var getMagneticField = function() {
-		return mMagneticField;
-	};
-
-	var setMagneticField = function(mf) {
-		mMagneticField.copy(mf);
-	};
-
-	return {
-		'getAcceleration': getAcceleration,
-		'setAcceleration': setAcceleration,
-		'getRotationRate': getRotationRate,
-		'setRotationRate': setRotationRate,
-		'getMagneticField': getMagneticField,
-		'setMagneticField': setMagneticField,
-		'getTemperature': getTemperature,
-		'setTemperature': setTemperature,
-		'getTimeDelta': getTimeDelta,
-		'setTimeDelta': setTimeDelta
-	};
+var MessageBodyFrame = function(acc, rotRate, mag, temp, tDelta) {
+	this.acceleration = acc || new THREE.Vector3();
+	this.rotationRate = rotRate || new THREE.Vector3();
+	this.magneticField = mag || new THREE.Vector3();
+	this.temperature = temp || 0;
+	this.timeDelta = tDelta || 0;
 };
+
+MessageBodyFrame.prototype = {
+	constructor: MessageBodyFrame,
+
+	setAcceleration: function (acc) {
+		this.acceleration = acc;
+		return this;
+	},
+	setRotationRate: function (rotRate) {
+		this.rotationRate = rotRate;
+		return this;
+	},
+	setMagneticField: function (mag) {
+		this.magneticField = mag;
+		return this;
+	},
+	setTemperature: function (temp) {
+		this.temperature = temp;
+		return this;
+	},
+	setTimeDelta: function (tDelta) {
+		this.timeDelta = tDelta;
+		return this;
+	}
+};
+
+//---------------------------------
 
 
 var RiftOrientation = function() {
@@ -457,7 +432,7 @@ var RiftOrientation = function() {
 		} else {
 			mSensors.setTimeDelta(timeUnit);
 		}
-		log("sensor timedelta: " + mSensors.getTimeDelta());
+		log("sensor timedelta: " + mSensors.timeDelta);
 
 		for (var i = 0; i < iterations; i++) {
 			log("iteration #" + i);
@@ -465,10 +440,10 @@ var RiftOrientation = function() {
 			mSensors.setRotationRate(msg.getSamples()[i].mGyro);
 			mSensors.setMagneticField(msg.getMag());
 			mSensors.setTemperature(msg.getTemperature());
-			log("\tacceleration: " + JSON.stringify(mSensors.getAcceleration()));
-			log("\tRotationRate: " + JSON.stringify(mSensors.getRotationRate()));
-			log("\tMagneticField: " + JSON.stringify(mSensors.getMagneticField()));
-			log("\tTemperature: " + mSensors.getTemperature());
+			log("\tacceleration: " + JSON.stringify(mSensors.acceleration);
+			log("\tRotationRate: " + JSON.stringify(mSensors.rotationRate);
+			log("\tMagneticField: " + JSON.stringify(mSensors.magneticField);
+			log("\tTemperature: " + mSensors.temperature;
 
 			updateOrientationFromMessageBodyFrame(mSensors);
 
@@ -490,14 +465,14 @@ var RiftOrientation = function() {
 	var updateOrientationFromMessageBodyFrame = function(sensors) {
 		log("updateOrientationFromMessageBodyFrame()");
 
-		mAngV.copy(sensors.getRotationRate());
+		mAngV.copy(sensors.rotationRate;
 		log("mAngV before: " + JSON.stringify(mAngV));
 		mAngV.y *= YAW_MULT;
 		log("mAngV after: " + JSON.stringify(mAngV));
 
-		mA.copy(sensors.getAcceleration()).multiplyScalar(sensors.getTimeDelta());
+		mA.copy(sensors.acceleration.multiplyScalar(sensors.timeDelta;
 
-		dV.copy(mAngV).multiplyScalar(sensors.getTimeDelta());
+		dV.copy(mAngV).multiplyScalar(sensors.timeDelta;
 		log("dV: " + JSON.stringify(dV));
 
 		var angle = dV.length();
@@ -515,7 +490,7 @@ var RiftOrientation = function() {
 			mOrientation.multiply(dQ);
 		}
 
-		var accelMagnitude = sensors.getAcceleration().length();
+		var accelMagnitude = sensors.acceleration.length();
 		var angVMagnitude = mAngV.length();
 		var gravityEpsilon = 0.4;
 		var angVEpsilon = 3.0;
@@ -625,116 +600,6 @@ function log(logMessage) {
 }
 
 
-//====================================================================
-
-
-
-var RiftUsb = function(config) {
-	config = config ? config : {};
-
-	var mRetryOnDisconnect = true;
-
-	var mDebugEnabled = config.hasOwnProperty("debug") ? config["debug"] : true;
-
-	var callbacks = {
-		onOrientationUpdate: null,
-		onConfigUpdate: null,
-		onConnect: null,
-		onDisconnect: null
-	};
-
-	// hook up callbacks specified in config
-	for (var cb in callbacks) {
-		if (typeof(config[cb]) == "function") {
-			callbacks[cb] = config[cb];
-		}
-	}
-
-	var error = function(message) {
-		console.error("RiftUsb: " + message);
-	}
-
-	var debug = function(message) {
-		if (mDebugEnabled) {
-			console.log("RiftUsb: " + message);
-		}
-	}
-
-
-	//---------------------
-
-	var isConnected = function() {
-		debug("isConnected()");
-		error("isConnected() not implemented yet");
-	}
-
-	var disconnect = function() {
-		debug("disconnect()");
-		error("disconnect() not implemented yet");
-	}
-
-	var connect = function() {
-		debug("connect()");
-		error("connect() not implemented yet");
-
-		mRetryOnDisconnect = true;
-
-	}
-
-	var getOrientation = function() {
-		debug("getOrientation()");
-		error("getOrientation() not implemented yet");
-	}
-
-	var getConfiguration = function() {
-		debug("getConfiguration()");
-		error("getConfiguration() not implemented yet");
-	}
-
-	return {
-		"isConnected": isConnected,
-		"disconnect": disconnect,
-		"connect": connect,
-		"getOrientation": getOrientation,
-		"getConfiguration": getConfiguration
-	}
-};
-
-//------------------------
-
-var myRiftUsb = new RiftUsb({
-	"onOrientationUpdate": onOrientationUpdate,
-	"onConfigUpdate": onConfigUpdate,
-	"onConnect": onConnect,
-	"onDisconnect": onDisconnect
-});
-
-var onOrientationUpdate = function(quat) {
-	console.log("onOrientationUpdate", quat);
-}
-
-var onConfigUpdate = function(config) {
-	console.log("onConfigUpdate", config);
-}
-
-var onConnect = function() {
-	console.log("onConnect");
-}
-
-var onDisconnect = function() {
-	console.log("onDisconnect");
-}
-
-//========================================================
-
-
-
-
-
-
-
-
-
 
 
 var webview = document.getElementById("simWebview");
@@ -742,3 +607,118 @@ var webview = document.getElementById("simWebview");
 var sendOrientationToSimulation = function(quat) {
 	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
 }
+
+//---------------------------------
+
+var SensorFilter = function(capacity) {
+
+	var mCapacity = capacity || 20;
+	var mRunningTotal = new THREE.Vector3();
+	var mElements = new Array(mCapacity);
+	var mLastIdx = -1;
+	var mCount = 0;
+
+	// Add a new element to the filter
+  // Updates the running sum value
+	var addElement = function(e) {
+		var nextIdx = (mLastIdx + 1) % mCapacity;
+
+		mRunningTotal.add(e.clone().sub(mElements[nextIdx]));
+
+		// circular buffer add element
+		mLastIdx = (mLastIdx + 1) % mCapacity;
+		mElements[mLastIdx] = e;
+		if (mCount < mCapacity) {
+			mCount++;
+		}
+		// end circular buffer add element
+
+		if (mLastIdx == 0) {
+			// update the cached total to avoid error accumulation
+			mRunningTotal = new THREE.Vector3();
+			for (var i = 0; i < mCount; i++) {
+				mRunningTotal.add(mElements[i]);
+			}
+		}
+	};
+
+
+	return {
+		'addElement': addElement
+	}
+};
+
+
+
+
+
+var SensorFilter = function(capacity) {
+	var mCapacity = capacity || 20;
+	var mRunningTotal = new THREE.Vector3();
+	var mElements = [];
+	var mLastIdx = -1;
+	var mCount = 0;
+
+	// initialize each element of circular buffer
+	for (var i = 0; i < mCapacity; i++) {
+	  mElements[i] = new THREE.Vector3();
+	}
+
+	// Add a new element to the filter
+	// Updates the running sum value
+	var addElement = function(e) {
+		var nextIdx = (mLastIdx + 1) % mCapacity;
+
+		mRunningTotal.set(mRunningTotal.x + e.x - mElements[nextIdx].x,
+											mRunningTotal.y + e.y - mElements[nextIdx].y,
+											mRunningTotal.z + e.z - mElements[nextIdx].z);
+
+		// circular buffer add element
+		mLastIdx = (mLastIdx + 1) % mCapacity;
+		mElements[mLastIdx].copy(e);
+		if (mCount < mCapacity) {
+			mCount++;
+		}
+		// end circular buffer add element
+		if (mLastIdx == 0) {
+			// update the cached total to avoid error accumulation
+			mRunningTotal.set(0,0,0);
+			for (var i = 0; i < mCount; i++) {
+				mRunningTotal.set(mRunningTotal.x + mElements[i].x,
+													mRunningTotal.y + mElements[i].y,
+													mRunningTotal.z + mElements[i].z);
+			}
+		}
+	};
+
+	var mean = function() {
+  return (mCount == 0) ? 
+    new THREE.Vector3() : 
+    new THREE.Vector3(mRunningTotal.x / mCount, 
+                      mRunningTotal.y / mCount, 
+                      mRunningTotal.z / mCount);
+	};
+
+  return {
+  	'addElement': addElement,
+  	'mean': mean
+  };
+
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------------
+

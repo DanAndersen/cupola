@@ -1,0 +1,16 @@
+{
+	"Oculus Device Profile Version":	"1.0",
+	"Device":	{
+		"Product":	"Tracker DK",
+		"ProductID":	1,
+		"Serial":	"OOKAI3TGQK37",
+		"EnableYawCorrection":	true,
+		"MagCalibration":	{
+			"Version":	"2.0",
+			"Name":	"default",
+			"Time":	"2013-10-12 08:07:58",
+			"CalibrationMatrix":	"1.64133 0.0141079 -0.0108806 -0.166527 0.0141079 1.41594 -0.0342712 0.643716 -0.0108806 -0.0342712 1.56853 1.05617 0 0 0 1 ",
+			"Calibration":	"1 0 0 -0.100989 0 1 0 0.472158 0 0 1 0.682966 0 0 0 1 "
+		}
+	}
+}
