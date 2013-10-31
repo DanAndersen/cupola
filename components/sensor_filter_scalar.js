@@ -8,7 +8,7 @@ var SensorFilterScalar = function(capacity) {
 
   // initialize each element of circular buffer
   for (var i = 0; i < mCapacity; i++) {
-    mElements[i] = new 0;
+    mElements[i] = 0;
   }
 
   // Add a new element to the filter
@@ -20,7 +20,7 @@ var SensorFilterScalar = function(capacity) {
 
   	// circular buffer add element
   	mLastIdx = (mLastIdx + 1) % mCapacity;
-  	mElements[mLastIdx].copy(e);
+  	mElements[mLastIdx] = e;
   	if (mCount < mCapacity) {
   		mCount++;
   	}

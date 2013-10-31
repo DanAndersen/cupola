@@ -46,13 +46,71 @@ var SensorFusion = function() {
 	var mQ = new THREE.Quaternion();
 
 
+
+
+
+
+
+	var mSensors = new MessageBodyFrame();
+
+	var TIME_UNIT = 1.0 / 1000.0;
+
+	var updateOrientationFromTrackerMessage = function(trackerMessage) {
+		log("updateOrientationFromTrackerMessage()");
+		var iterations = trackerMessage.getSampleCount();
+		log("iterations: " + iterations);
+		if (trackerMessage.getSampleCount() > 3) {
+			iterations = 3;
+			mSensors.setTimeDelta((trackerMessage.getSampleCount() - 2) * TIME_UNIT);
+		} else {
+			mSensors.setTimeDelta(TIME_UNIT);
+		}
+		log("sensor timedelta: " + mSensors.timeDelta);
+
+		for (var i = 0; i < iterations; i++) {
+			log("iteration #" + i);
+			mSensors.setAcceleration(trackerMessage.getSamples()[i].mAcc);
+			mSensors.setRotationRate(trackerMessage.getSamples()[i].mGyro);
+			mSensors.setMagneticField(trackerMessage.getMag());
+			mSensors.setTemperature(trackerMessage.getTemperature());
+			log("\tacceleration: " + JSON.stringify(mSensors.acceleration));
+			log("\tRotationRate: " + JSON.stringify(mSensors.rotationRate));
+			log("\tMagneticField: " + JSON.stringify(mSensors.magneticField));
+			log("\tTemperature: " + mSensors.temperature);
+
+			//updateOrientationFromMessageBodyFrame(mSensors);
+			handleMessage(mSensors);
+
+			mSensors.setTimeDelta(TIME_UNIT);
+		}
+
+	};
+
+	var log = function(message) {
+		//console.log(message);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	var isMotionTrackingEnabled = function() {
 		return mMotionTrackingEnabled;
 	}
 
 	var handleMessage = function(msg) {
-
+		log("handleMessage()");
 		if (!(msg instanceof MessageBodyFrame) || !isMotionTrackingEnabled()) {
+			log("returning early");
 			return;
 		}
 
@@ -60,6 +118,10 @@ var SensorFusion = function() {
 		var gyro = msg.rotationRate;
 		var accel = msg.acceleration;
 		var mag = msg.magneticField;
+
+		log("gyro", gyro);
+		log("accel", accel);
+		log("mag", mag);
 
 		// Insert current sensor data into filter history
 		mFRawMag.addElement(mag);
@@ -80,7 +142,7 @@ var SensorFusion = function() {
 		mRunningTime += mDeltaT;
 
 		// Small preprocessing
-		var qInv = new mq.clone().inverse();
+		var qInv = new mQ.clone().inverse();
 		var up = new THREE.Vector3(0,1,0).applyQuaternion(qInv);
 
 		var gyroCorrected = new gyro.clone();
@@ -226,9 +288,12 @@ var SensorFusion = function() {
 	//  A predictive filter based on extrapolating the smoothed, current angular velocity
 	// Get predicted orientaion in the near future; predictDt is lookahead amount in seconds.
 	var getPredictedOrientation = function(pdt) {
+		console.log("getPredictedOrientation()");
 		predictDt = typeof a !== 'undefined' ? a : mPredictionDT;
 
 		var qP = mQ.clone();
+
+		log("qP before: " + JSON.stringify(qP));
 
 		if (mEnablePrediction) {
 			// This method assumes a constant angular velocity
@@ -236,7 +301,7 @@ var SensorFusion = function() {
 			var angVelFL = angVelF.length();
 
 			// Force back to raw measurement
-			angvelF.copy(mAngV);
+			angVelF.copy(mAngV);
 			angVelFL = mAngV.length();
 
 			// Dynamic prediction interval: Based on angular velocity to reduce vibration
@@ -261,15 +326,15 @@ var SensorFusion = function() {
 				qP = mQ.clone().multiply(deltaQP);
 			}
 		}
+		log("qP after: " + JSON.stringify(qP));
 		return qP;
 	};
 
 
 
-
-
 	return {
 		'handleMessage': handleMessage,
-		'getPredictedOrientation': getPredictedOrientation
+		'getPredictedOrientation': getPredictedOrientation,
+		'updateOrientationFromTrackerMessage': updateOrientationFromTrackerMessage
 	};
 };
