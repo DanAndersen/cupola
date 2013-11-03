@@ -288,15 +288,8 @@ function updateQuatLabel(quat) {
 	statDiv.innerText = JSON.stringify(quat);
 }
 
-//---------------------------------
-
-
-
-
-var webview = document.getElementById("simWebview");
+var webview = document.getElementById("sim-webview");
 
 var sendOrientationToSimulation = function(quat) {
 	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
 }
-
-//---------------------------------

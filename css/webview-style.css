@@ -1,0 +1,25 @@
+#info{
+  padding:10px;
+  color:#fff;
+  position:absolute;
+  background-color:rgba(0,0,0,0.4);
+}
+
+#help-text H1 {
+  font-size:18px;
+  margin-top:15px;
+
+}
+
+#help-text DIV{
+  margin-bottom:5px;
+}
+
+#help-text DIV LABEL{
+  display:inline-block;
+  width:160px;
+}
+
+#help-text SECTION {
+  margin-top:20px;
+}
