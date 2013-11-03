@@ -127,7 +127,8 @@ var UsbAdapter = function() {
 			var orientation = mSensorFusion.getPredictedOrientation();
 			debug("orientation: " + JSON.stringify(orientation));
 
-			updateQuatLabel(orientation);
+			// NOTE: updating the DOM like this really slows things down
+			//updateQuatLabel(orientation);
 
 			sendOrientationToSimulation(orientation);
 
