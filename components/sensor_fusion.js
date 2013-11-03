@@ -145,7 +145,7 @@ var SensorFusion = function() {
 		var qInv = new mQ.clone().inverse();
 		var up = new THREE.Vector3(0,1,0).applyQuaternion(qInv);
 
-		var gyroCorrected = new gyro.clone();
+		var gyroCorrected = gyro.clone();
 
 		// Apply integral term
     // All the corrections are stored in the Simultaneous Orthogonal Rotations Angle representation,
