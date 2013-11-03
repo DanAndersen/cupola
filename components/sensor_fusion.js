@@ -1,5 +1,7 @@
 var SensorFusion = function() {
 
+	var mLoggingEnabled = false;
+
 	var mEnablePrediction = true;
 	var mEnableGravity = true;
 	var mEnableYawCorrection = false;
@@ -45,12 +47,6 @@ var SensorFusion = function() {
 
 	var mQ = new THREE.Quaternion();
 
-
-
-
-
-
-
 	var mSensors = new MessageBodyFrame();
 
 	var TIME_UNIT = 1.0 / 1000.0;
@@ -87,21 +83,10 @@ var SensorFusion = function() {
 	};
 
 	var log = function(message) {
-		//console.log(message);
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
+		if (mLoggingEnabled) {
+			console.log(message);
+		}
+	};
 
 	var isMotionTrackingEnabled = function() {
 		return mMotionTrackingEnabled;

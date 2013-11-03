@@ -1,4 +1,7 @@
 var UsbAdapter = function() {
+	
+	var mDebugEnabled = false;
+
 	if (!chrome.permissions) {
 		console.error("UsbAdapter: Requires chrome.permissions API");
 		return null;
@@ -24,6 +27,9 @@ var UsbAdapter = function() {
 	var mConnected = true;
 
 	var mRunning = false;
+
+	var mTrackerMessage = new TrackerMessage();
+	var mSensorFusion = new SensorFusion();
 
 	//-----------------------------
 
@@ -77,8 +83,6 @@ var UsbAdapter = function() {
       ]).buffer
   };
 
-
-
 	//-----------------------------
 
 	var sendKeepAliveCompleted = function(usbEvent) {
@@ -109,6 +113,32 @@ var UsbAdapter = function() {
 
 	//-----------------
 
+	var process = function(buf) {
+		debug("process()");
+		var buffer = new Uint8Array(buf);
+		if (mTrackerMessage.parseBuffer(buffer)) {
+			debug("message successfully parsed");
+
+			debug(mTrackerMessage.toString());
+
+			debug("updating orientation");
+			mSensorFusion.updateOrientationFromTrackerMessage(mTrackerMessage);
+
+			var orientation = mSensorFusion.getPredictedOrientation();
+			debug("orientation: " + JSON.stringify(orientation));
+
+			updateQuatLabel(orientation);
+
+			sendOrientationToSimulation(orientation);
+
+			if (mRunning) {
+				pollRiftSensors();
+			}
+		} else {
+			log("message failed parsing");
+		}
+	};
+
 	var mPollSensorsTransferInfo = {
     "direction": "in",
     "endpoint" : 1,
@@ -116,7 +146,7 @@ var UsbAdapter = function() {
   };  // 62 is length of a single orientation block
 
 	var pollRiftSensors = function() {
-		//console.log("pollRiftSensors()");
+		debug("pollRiftSensors()");
 		chrome.usb.bulkTransfer(mRiftConnectionHandle, mPollSensorsTransferInfo, sensorDataReceived);
 	};
 
@@ -139,6 +169,16 @@ var UsbAdapter = function() {
 	      console.error("Error receiving from device", usbEvent.resultCode);
 	    }
 	  }
+	};
+
+	var debug = function(debugMessage) {
+		if (mDebugEnabled) {
+			console.log("rift_class (DEBUG): " + debugMessage);
+		}
+	}
+
+	var log = function(logMessage) {
+		console.log(logMessage);
 	};
 
 
@@ -232,8 +272,6 @@ requestButton.addEventListener('click', function() {
   });
 });
 
-
-
 var connectButton = document.getElementById("connect");
 connectButton.addEventListener('click', function() {
 	usb.connect();
@@ -244,224 +282,13 @@ disconnectButton.addEventListener('click', function() {
 	usb.disconnect();
 });
 
-
-
 var statDiv = document.getElementById("stats");
 
 function updateQuatLabel(quat) {
 	statDiv.innerText = JSON.stringify(quat);
 }
 
-//====================================================================
-// putting worker computation back into normal thread
-
-
-
-
-
-
-
-
-
-
-
-
-
-var TrackerMessage = function() {
-
-	var SENSOR_SCALE = 0.0001;
-	var TEMPERATURE_SCALE = 0.01;
-
-	var mSampleCount;
-	var mTimestamp;
-	var mLastCommandId;
-
-	var samples = [];	// Vector3 for mAcc, mGyro
-	var mMag = new THREE.Vector3();	// Vector3
-
-	var parseBuffer = function(buffer) {
-		log("parseBuffer()");
-
-		if (buffer.length == 62) {
-			log("correct length: " + buffer.length);
-
-			mSampleCount = buffer[1];
-			mTimestamp = decodeUInt16(buffer, 2);
-			mLastCommandId = decodeUInt16(buffer, 4);
-			mTemperature = decodeSInt16(buffer, 6) * TEMPERATURE_SCALE;
-
-			var iterationCount = Math.min(3, mSampleCount);
-			for (var i = 0; i < iterationCount; i++) {
-				samples[i] = {
-					mAcc: unpackSensor(buffer, 8 + 16 * i).multiplyScalar(SENSOR_SCALE),
-					mGyro: unpackSensor(buffer, 16 + 16 * i).multiplyScalar(SENSOR_SCALE)
-				};
-			}
-
-			mMag.set(
-				decodeSInt16(buffer, 56),
-				decodeSInt16(buffer, 58),
-				decodeSInt16(buffer, 60)
-			).multiplyScalar(SENSOR_SCALE);
-
-			return true;
-		} else {
-			log("wrong length: " + buffer.length);
-			return false;
-		}
-	};
-
-	var decodeUInt16 = function(buffer, start) {
-		return (buffer[start+1] << 8 | buffer[start]) & 0xffff;
-	};
-
-	var decodeSInt16 = function(buffer, start) {
-		return (buffer[start+1] << 8 | buffer[start]);
-	};
-
-	var unpackSensor = function(buffer, start) {
-		return new THREE.Vector3(
-			( buffer[start+0] << 24 | (buffer[start+1] & 0xff) << 16 | (buffer[start+2] & 0xff) << 8 ) >> 11,
-      ( buffer[start+2] << 29 | (buffer[start+3] & 0xff) << 21 | (buffer[start+4] & 0xff) << 13 | (buffer[start+5] & 0xff) << 5 ) >> 11,
-      ( buffer[start+5] << 26 | (buffer[start+6] & 0xff) << 18 | (buffer[start+7] & 0xff) << 10 ) >> 11
-		);
-	};
-
-	var toString = function() {
-		return "TS: " + mTimestamp + ", Temp: " + mTemperature + "C\n" +
-			"Acc:\n" +
-			"\t" + samples[0].mAcc.x + " m/s^2\n" + 
-			"\t" + samples[0].mAcc.y + " m/s^2\n" +
-			"\t" + samples[0].mAcc.z + " m/s^2\n" + 
-			"Gyro:\n" +
-			"\t" + samples[0].mGyro.x + " rad/s\n" + 
-			"\t" + samples[0].mGyro.y + " rad/s\n" +
-			"\t" + samples[0].mGyro.z + " rad/s\n" + 
-			"Mag:\n" +
-			"\t" + mMag.x + "\n" + 
-			"\t" + mMag.y + "\n" +
-			"\t" + mMag.z;
-	};
-
-
-	var getSampleCount = function() {
-		return mSampleCount;
-	};
-
-	var getSamples = function() {
-		return samples;
-	};
-
-	var getMag = function() {
-		return mMag;
-	};
-
-	var getTemperature = function() {
-		return mTemperature;
-	};
-
-	return {
-		'parseBuffer': parseBuffer,
-		'toString': toString,
-		'getSampleCount': getSampleCount,
-		'getSamples': getSamples,
-		'getMag': getMag,
-		'getTemperature': getTemperature
-	};
-
-};
-
 //---------------------------------
-
-
-var MessageBodyFrame = function(acc, rotRate, mag, temp, tDelta) {
-	this.acceleration = acc || new THREE.Vector3();
-	this.rotationRate = rotRate || new THREE.Vector3();
-	this.magneticField = mag || new THREE.Vector3();
-	this.temperature = temp || 0;
-	this.timeDelta = tDelta || 0;
-};
-
-MessageBodyFrame.prototype = {
-	constructor: MessageBodyFrame,
-
-	setAcceleration: function (acc) {
-		this.acceleration = acc;
-		return this;
-	},
-	setRotationRate: function (rotRate) {
-		this.rotationRate = rotRate;
-		return this;
-	},
-	setMagneticField: function (mag) {
-		this.magneticField = mag;
-		return this;
-	},
-	setTemperature: function (temp) {
-		this.temperature = temp;
-		return this;
-	},
-	setTimeDelta: function (tDelta) {
-		this.timeDelta = tDelta;
-		return this;
-	}
-};
-
-//---------------------------------
-
-var mTrackerMessage = new TrackerMessage();
-var mSensorFusion = new SensorFusion();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function process(buf) {
-	log("process()");
-	var buffer = new Uint8Array(buf);
-	if (mTrackerMessage.parseBuffer(buffer)) {
-		log("message successfully parsed");
-
-		log(mTrackerMessage.toString());
-
-		log("updating orientation");
-		mSensorFusion.updateOrientationFromTrackerMessage(mTrackerMessage);
-
-		var orientation = mSensorFusion.getPredictedOrientation();
-		log("orientation: " + JSON.stringify(orientation));
-
-		updateQuatLabel(orientation);
-
-		sendOrientationToSimulation(orientation);
-
-		usb.pollRiftSensors();
-	} else {
-		log("message failed parsing");
-	}
-}
-
-
-
-
-
-
-
-
-function log(logMessage) {
-	//console.log(logMessage);
-}
 
 
 
