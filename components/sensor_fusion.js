@@ -288,17 +288,24 @@ var SensorFusion = function() {
 	//  A predictive filter based on extrapolating the smoothed, current angular velocity
 	// Get predicted orientaion in the near future; predictDt is lookahead amount in seconds.
 	var getPredictedOrientation = function(pdt) {
-		console.log("getPredictedOrientation()");
-		predictDt = typeof a !== 'undefined' ? a : mPredictionDT;
+		//console.log("getPredictedOrientation()");
+		predictDt = typeof pdt !== 'undefined' ? pdt : mPredictionDT;
+
+		//console.log("predictDt: " + predictDt);
 
 		var qP = mQ.clone();
 
-		log("qP before: " + JSON.stringify(qP));
+		//console.log("qP before: " + JSON.stringify(qP));
 
 		if (mEnablePrediction) {
 			// This method assumes a constant angular velocity
 			var angVelF = mFAngV.savitzkyGolaySmooth8();
+
+			//console.log("angVelF", angVelF);
+
 			var angVelFL = angVelF.length();
+
+			//console.log("angVelFL", angVelFL);
 
 			// Force back to raw measurement
 			angVelF.copy(mAngV);
@@ -307,15 +314,24 @@ var SensorFusion = function() {
 			// Dynamic prediction interval: Based on angular velocity to reduce vibration
 			var minPdt = 0.001;
 			var slopePdt = 0.1;
-			var newpdt = pdt;
+			var newpdt = predictDt;
 			var tpdt = minPdt + slopePdt * angVelFL;
-			if (tpdt < pdt) {
+
+			//console.log("tpdt", tpdt);
+
+			if (tpdt < predictDt) {
 				newpdt = tpdt;
 			}
 
+			//console.log("newpdt", newpdt);
+
 			if (angVelFL > 0.001) {
 				var rotAxisP 			= angVelF.clone().normalize();
+
 				var halfRotAngleP = angVelFL * newpdt * 0.5;
+
+				//console.log("halfRotAngleP", halfRotAngleP);
+
 				var sinaHRAP 			= Math.sin(halfRotAngleP);
 
 				var deltaQP = new THREE.Quaternion(	rotAxisP.x * sinaHRAP,
@@ -323,10 +339,12 @@ var SensorFusion = function() {
 																						rotAxisP.z * sinaHRAP,
 																						Math.cos(halfRotAngleP));
 
+				//console.log("deltaQP", deltaQP);
+
 				qP = mQ.clone().multiply(deltaQP);
 			}
 		}
-		log("qP after: " + JSON.stringify(qP));
+		//console.log("qP after: " + JSON.stringify(qP));
 		return qP;
 	};
 
