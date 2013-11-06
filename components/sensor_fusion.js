@@ -92,6 +92,11 @@ var SensorFusion = function() {
 		return mMotionTrackingEnabled;
 	}
 
+
+	var UP_CONST = new THREE.Vector3(0,1,0);
+	var qInv = new THREE.Quaternion();
+	var up = new THREE.Vector3();
+
 	var handleMessage = function(msg) {
 		log("handleMessage()");
 		if (!(msg instanceof MessageBodyFrame) || !isMotionTrackingEnabled()) {
@@ -127,8 +132,8 @@ var SensorFusion = function() {
 		mRunningTime += mDeltaT;
 
 		// Small preprocessing
-		var qInv = new mQ.clone().inverse();
-		var up = new THREE.Vector3(0,1,0).applyQuaternion(qInv);
+		qInv.copy(mQ).inverse();
+		up.copy(UP_CONST).applyQuaternion(qInv);
 
 		var gyroCorrected = gyro.clone();
 
@@ -236,25 +241,25 @@ var SensorFusion = function() {
 	};
 
 
+	var measuredClone = new THREE.Vector3();
+	var estimatedClone = new THREE.Vector3();
+
 	// Compute a rotation required to transform "estimated" into "measured"
 	// Returns an approximation of the goal rotation in the Simultaneous Orthogonal Rotations Angle representation
 	// (vector direction is the axis of rotation, norm is the angle)
 	var computeCorrection = function(measured, estimated) {
-		var measuredClone = new measured.clone();
-		var estimatedClone = new estimated.clone();
-
-		measuredClone.normalize();
-		estimatedClone.normalize();
-
-		var correction = new measuredClone.clone().cross(estimatedClone);
+		measuredClone.copy(measured).normalize();
+		estimatedClone.copy(estimated).normalize();
 
 		var cosError = measuredClone.dot(estimatedClone);
+
+		var correction = measuredClone.cross(estimatedClone);
 
 		// from the def. of cross product, correction.Length() = sin(error)
     // therefore sin(error) * sqrt(2 / (1 + cos(error))) = 2 * sin(error / 2) ~= error in [-pi, pi]
     // Mathf::Tolerance is used to avoid div by 0 if cos(error) = -1
 
-    return correction.clone().multiplyScalar( Math.sqrt( 2.0 / (1 + cosError + MATHF_TOLERANCE) ) );
+    return correction.multiplyScalar( Math.sqrt( 2.0 / (1 + cosError + MATHF_TOLERANCE) ) );
 	};
 
 
@@ -270,27 +275,22 @@ var SensorFusion = function() {
 
 
 
+
+	var deltaQP = new THREE.Quaternion();
+	var qP = new THREE.Quaternion();
+
 	//  A predictive filter based on extrapolating the smoothed, current angular velocity
 	// Get predicted orientaion in the near future; predictDt is lookahead amount in seconds.
 	var getPredictedOrientation = function(pdt) {
-		//console.log("getPredictedOrientation()");
 		predictDt = typeof pdt !== 'undefined' ? pdt : mPredictionDT;
 
-		//console.log("predictDt: " + predictDt);
-
-		var qP = mQ.clone();
-
-		//console.log("qP before: " + JSON.stringify(qP));
+		qP.copy(mQ);
 
 		if (mEnablePrediction) {
 			// This method assumes a constant angular velocity
 			var angVelF = mFAngV.savitzkyGolaySmooth8();
 
-			//console.log("angVelF", angVelF);
-
 			var angVelFL = angVelF.length();
-
-			//console.log("angVelFL", angVelFL);
 
 			// Force back to raw measurement
 			angVelF.copy(mAngV);
@@ -302,34 +302,25 @@ var SensorFusion = function() {
 			var newpdt = predictDt;
 			var tpdt = minPdt + slopePdt * angVelFL;
 
-			//console.log("tpdt", tpdt);
-
 			if (tpdt < predictDt) {
 				newpdt = tpdt;
 			}
 
-			//console.log("newpdt", newpdt);
-
 			if (angVelFL > 0.001) {
-				var rotAxisP 			= angVelF.clone().normalize();
+				var rotAxisP 			= angVelF.normalize();
 
 				var halfRotAngleP = angVelFL * newpdt * 0.5;
 
-				//console.log("halfRotAngleP", halfRotAngleP);
-
 				var sinaHRAP 			= Math.sin(halfRotAngleP);
 
-				var deltaQP = new THREE.Quaternion(	rotAxisP.x * sinaHRAP,
-																						rotAxisP.y * sinaHRAP,
-																						rotAxisP.z * sinaHRAP,
-																						Math.cos(halfRotAngleP));
+				deltaQP.set(rotAxisP.x * sinaHRAP,
+										rotAxisP.y * sinaHRAP,
+										rotAxisP.z * sinaHRAP,
+										Math.cos(halfRotAngleP));
 
-				//console.log("deltaQP", deltaQP);
-
-				qP = mQ.clone().multiply(deltaQP);
+				qP.multiply(deltaQP);
 			}
 		}
-		//console.log("qP after: " + JSON.stringify(qP));
 		return qP;
 	};
 

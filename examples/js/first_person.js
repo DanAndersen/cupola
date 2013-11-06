@@ -23,7 +23,11 @@ var bodyPosition;
 var viewAngle;
 
 var velocity;
-var oculusBridge;
+//var oculusBridge;
+
+
+
+var hmdConfig;
 
 
 
@@ -203,8 +207,25 @@ function onResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
   } else {
     riftCam.setSize(window.innerWidth, window.innerHeight);
+    updateHMDResolution(window.innerWidth, window.innerHeight);
   }
 }
+
+
+
+function updateHMDResolution(width, height) {
+
+  if (!hmdConfig) {
+    hmdConfig = riftCam.getHMD();
+  }
+
+  hmdConfig.hResolution = width;
+  hmdConfig.vResolution = height;
+
+  riftCam.setHMD(hmdConfig);
+}
+
+
 
 
 function bridgeConnected(){

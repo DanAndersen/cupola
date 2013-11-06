@@ -5,3 +5,6 @@
   overflow-y: hidden;
 }
 
+body {
+	margin: 0;
+}
