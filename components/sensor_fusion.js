@@ -74,7 +74,6 @@ var SensorFusion = function() {
 			log("\tMagneticField: " + JSON.stringify(mSensors.magneticField));
 			log("\tTemperature: " + mSensors.temperature);
 
-			//updateOrientationFromMessageBodyFrame(mSensors);
 			handleMessage(mSensors);
 
 			mSensors.setTimeDelta(TIME_UNIT);

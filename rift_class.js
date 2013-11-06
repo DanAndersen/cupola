@@ -1,5 +1,8 @@
 var UsbAdapter = function() {
 	
+	var mPredictDt = 0.045;	// default is 0.03 seconds -- says how far to look-ahead when getting orientation
+													// higher values can offset lag, but can also lead to jerky acceleration/deceleration
+
 	var mDebugEnabled = false;
 
 	if (!chrome.permissions) {
@@ -124,7 +127,7 @@ var UsbAdapter = function() {
 			debug("updating orientation");
 			mSensorFusion.updateOrientationFromTrackerMessage(mTrackerMessage);
 
-			var orientation = mSensorFusion.getPredictedOrientation();
+			var orientation = mSensorFusion.getPredictedOrientation(mPredictDt);
 			debug("orientation: " + JSON.stringify(orientation));
 
 			// NOTE: updating the DOM like this really slows things down
