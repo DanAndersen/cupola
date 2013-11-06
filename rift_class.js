@@ -252,7 +252,8 @@ var UsbAdapter = function() {
 		"connect": connect,
 		"disconnect": disconnect,
 		"getPermissionObject": getPermissionObject,
-		"pollRiftSensors": pollRiftSensors
+		"pollRiftSensors": pollRiftSensors,
+		"mPredictDt": mPredictDt
 	};
 
 };
@@ -264,8 +265,9 @@ var UsbAdapter = function() {
 var usb = new UsbAdapter();
 var requestButton = document.getElementById("requestPermission");
 
-requestButton.addEventListener('click', function() {
-  chrome.permissions.request( usb.getPermissionObject(), function(result) {
+
+function requestPermission() {
+	chrome.permissions.request( usb.getPermissionObject(), function(result) {
     if (result) {
     	console.log("got permission");
       usb.connect();
@@ -274,6 +276,11 @@ requestButton.addEventListener('click', function() {
       console.log(chrome.runtime.lastError);
     }
   });
+}
+
+
+requestButton.addEventListener('click', function() {
+  requestPermission();
 });
 
 var connectButton = document.getElementById("connect");
@@ -297,3 +304,38 @@ var webview = document.getElementById("sim-webview");
 var sendOrientationToSimulation = function(quat) {
 	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
 }
+
+
+//----------------------------
+
+// GUI
+
+var gui = new dat.GUI();
+
+var actionGuiFolder = gui.addFolder('Actions');
+
+var actionObj = {
+	connect: function() {
+		console.log("connect button pressed");
+		usb.connect();
+	},
+
+	disconnect: function() {
+		console.log("disconnect button pressed");
+		usb.disconnect();
+	},
+
+	requestPermission: function() {
+		console.log("request permission button pressed");
+		requestPermission();
+	}
+};
+
+actionGuiFolder.add(actionObj, 'connect').name("Connect to Rift");
+actionGuiFolder.add(actionObj, 'disconnect').name("Disconnect from Rift");
+actionGuiFolder.add(actionObj, 'requestPermission').name("Request USB permissions");
+actionGuiFolder.open();
+
+var configGuiFolder = gui.addFolder('Config');
+
+configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec)");
