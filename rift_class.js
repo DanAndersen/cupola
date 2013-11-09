@@ -31,8 +31,15 @@ var UsbAdapter = function() {
 
 	var mRunning = false;
 
-	var mTrackerMessage = new TrackerMessage();
-	var mSensorFusion = new SensorFusion();
+	var mTrackerMessage;
+	var mSensorFusion;
+	resetSensors();
+
+	function resetSensors() {
+		mTrackerMessage = new TrackerMessage();
+		mSensorFusion = new SensorFusion();
+	}
+
 
 	//-----------------------------
 
@@ -241,6 +248,8 @@ var UsbAdapter = function() {
 		}
 		
 		mRunning = false;
+
+		resetSensors();
 		
 	};
 
