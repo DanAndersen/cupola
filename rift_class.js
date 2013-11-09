@@ -272,7 +272,38 @@ var UsbAdapter = function() {
 //////////////////////////////////////
 
 var usb = new UsbAdapter();
-var requestButton = document.getElementById("requestPermission");
+
+
+var webview = document.getElementById("sim-webview");
+var urlTextInput = document.getElementById("url-bar");
+var urlSubmitButton = document.getElementById("url-submit");
+
+var submitUrl = function() {
+	var urlValue = urlTextInput.value;
+	console.log("going to url=" + urlValue);
+	webview.src = urlValue;
+};
+
+urlSubmitButton.addEventListener('click', submitUrl);
+urlTextInput.addEventListener('keyup', function(event){
+	if (event.keyCode == 13) {
+		// enter was pressed
+		submitUrl();
+	}
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function viewerConnect() {
 	console.log("connect button pressed");
@@ -308,7 +339,7 @@ function updateQuatLabel(quat) {
 	statDiv.innerText = JSON.stringify(quat);
 }
 
-var webview = document.getElementById("sim-webview");
+
 
 var sendOrientationToSimulation = function(quat) {
 	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
