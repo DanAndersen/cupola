@@ -265,8 +265,8 @@ var UsbAdapter = function() {
 var usb = new UsbAdapter();
 var requestButton = document.getElementById("requestPermission");
 
-
-function requestPermission() {
+function viewerConnect() {
+	console.log("connect button pressed");
 	chrome.permissions.request( usb.getPermissionObject(), function(result) {
     if (result) {
     	console.log("got permission");
@@ -279,19 +279,19 @@ function requestPermission() {
 }
 
 
-requestButton.addEventListener('click', function() {
-  requestPermission();
-});
+function viewerDisconnect() {
+	console.log("disconnect button pressed");
+	usb.disconnect();
+}
+
+
+
 
 var connectButton = document.getElementById("connect");
-connectButton.addEventListener('click', function() {
-	usb.connect();
-});
+connectButton.addEventListener('click', viewerConnect);
 
 var disconnectButton = document.getElementById("disconnect");
-disconnectButton.addEventListener('click', function() {
-	usb.disconnect();
-});
+disconnectButton.addEventListener('click', viewerDisconnect);
 
 var statDiv = document.getElementById("stats");
 
@@ -315,25 +315,12 @@ var gui = new dat.GUI();
 var actionGuiFolder = gui.addFolder('Actions');
 
 var actionObj = {
-	connect: function() {
-		console.log("connect button pressed");
-		usb.connect();
-	},
-
-	disconnect: function() {
-		console.log("disconnect button pressed");
-		usb.disconnect();
-	},
-
-	requestPermission: function() {
-		console.log("request permission button pressed");
-		requestPermission();
-	}
+	connect: viewerConnect,
+	disconnect: viewerDisconnect
 };
 
 actionGuiFolder.add(actionObj, 'connect').name("Connect to Rift");
 actionGuiFolder.add(actionObj, 'disconnect').name("Disconnect from Rift");
-actionGuiFolder.add(actionObj, 'requestPermission').name("Request USB permissions");
 actionGuiFolder.open();
 
 var configGuiFolder = gui.addFolder('Config');
