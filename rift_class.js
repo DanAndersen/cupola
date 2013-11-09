@@ -273,15 +273,36 @@ var UsbAdapter = function() {
 
 var usb = new UsbAdapter();
 
-
 var webview = document.getElementById("sim-webview");
+
 var urlTextInput = document.getElementById("url-bar");
 var urlSubmitButton = document.getElementById("url-submit");
 
+var connectButton = document.getElementById("connect");
+var disconnectButton = document.getElementById("disconnect");
+var toggleFullscreenButton = document.getElementById("toggle-fullscreen");
+
+
+connectButton.addEventListener('click', viewerConnect);
+disconnectButton.addEventListener('click', viewerDisconnect);
+toggleFullscreenButton.addEventListener('click', viewerToggleFullscreen);
+
+
+
+
+
+
+
 var submitUrl = function() {
-	var urlValue = urlTextInput.value;
-	console.log("going to url=" + urlValue);
-	webview.src = urlValue;
+	var s = urlTextInput.value;
+
+	if (!s.match(/^[a-zA-Z]+:\/\//))
+	{
+	    s = 'http://' + s;
+	}
+
+	console.log("going to url=" + s);
+	webview.src = s;
 };
 
 urlSubmitButton.addEventListener('click', submitUrl);
@@ -300,7 +321,17 @@ urlTextInput.addEventListener('keyup', function(event){
 
 
 
+function viewerToggleFullscreen() {
+	console.log("toggling fullscreen");
 
+	var appWindow = chrome.app.window.current();
+
+	if (appWindow.isFullscreen()) {
+		appWindow.restore();
+	} else {
+		appWindow.fullscreen();
+	}
+}
 
 
 
@@ -327,11 +358,7 @@ function viewerDisconnect() {
 
 
 
-var connectButton = document.getElementById("connect");
-connectButton.addEventListener('click', viewerConnect);
 
-var disconnectButton = document.getElementById("disconnect");
-disconnectButton.addEventListener('click', viewerDisconnect);
 
 var statDiv = document.getElementById("stats");
 
