@@ -293,23 +293,22 @@ toggleFullscreenButton.addEventListener('click', viewerToggleFullscreen);
 
 
 
-var submitUrl = function() {
-	var s = urlTextInput.value;
+var submitUrl = function(newUrl) {
 
-	if (!s.match(/^[a-zA-Z]+:\/\//))
+	if (!newUrl.match(/^[a-zA-Z]+:\/\//))
 	{
-	    s = 'http://' + s;
+	    newUrl = 'http://' + newUrl;
 	}
 
-	console.log("going to url=" + s);
-	webview.src = s;
+	console.log("going to url=" + newUrl);
+	webview.src = newUrl;
 };
 
 urlSubmitButton.addEventListener('click', submitUrl);
 urlTextInput.addEventListener('keyup', function(event){
 	if (event.keyCode == 13) {
 		// enter was pressed
-		submitUrl();
+		submitUrl(urlTextInput.value);
 	}
 });
 
@@ -383,11 +382,17 @@ var actionGuiFolder = gui.addFolder('Actions');
 
 var actionObj = {
 	connect: viewerConnect,
-	disconnect: viewerDisconnect
+	disconnect: viewerDisconnect,
+	toggleFullscreen: viewerToggleFullscreen,
+	url: "google.com"
 };
 
 actionGuiFolder.add(actionObj, 'connect').name("Connect to Rift");
 actionGuiFolder.add(actionObj, 'disconnect').name("Disconnect from Rift");
+actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
+actionGuiFolder.add(actionObj, 'url').name("URL").onFinishChange(function(newUrl) {
+	submitUrl(newUrl);
+});
 actionGuiFolder.open();
 
 var configGuiFolder = gui.addFolder('Config');

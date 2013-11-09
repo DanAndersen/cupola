@@ -1,7 +1,7 @@
 {
   "name": "Cupola VR Viewer",
-  "description": "Connects your Oculus Rift to remotely-hosted VR demos for low-latency head-tracking.",
-  "version": "1.0.0",
+  "description": "Connects your Oculus Rift to Web-based VR demos for low-latency head-tracking.",
+  "version": "0.1",
   "manifest_version": 2,
   "minimum_chrome_version": "26",
   "icons": {
