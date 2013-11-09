@@ -1,47 +1,28 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>RiftViewer</title>
+    <title>Cupole VR Viewer</title>
     <link href="css/style.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     
-    <div id="cupola-control-panel">
-
-      <button id="connect">Connect</button>
-      <button id="disconnect">Disconnect</button>
-
-      <button id="toggle-fullscreen">Toggle Fullscreen</button>
-
-      <div id="status">Status</div>
-
-      <input type="text" id="url-bar" />
-      <input type="button" id="url-submit" value="Go" />
-
-    </div>
-
     <webview id="sim-webview" src="http://localhost:8090/chrome_app/examples/first_person.html?aadf"></webview>
 
-    <!-- <webview id="sim-webview" src="http://danandersen.bitbucket.org/first_person.html"></webview> -->
 
-    
-
-
-
-
-    
+   
     <script src='lib/three.min.js'></script>
     
     <script src='lib/dat.gui.min.js'></script>
 
 
-    <script src="components/sensor_filter_scalar.js"></script>
-    <script src="components/sensor_filter_vector3.js"></script>
-    <script src="components/tracker_message.js"></script>
-    <script src="components/message_body_frame.js"></script>
-    <script src="components/sensor_fusion.js"></script>
+    <script src="js/components/sensor_filter_scalar.js"></script>
+    <script src="js/components/sensor_filter_vector3.js"></script>
+    <script src="js/components/tracker_message.js"></script>
+    <script src="js/components/message_body_frame.js"></script>
+    <script src="js/components/sensor_fusion.js"></script>
 
+    <script src="js/cupola_server.js"></script>
 
-    <script src="rift_class.js"></script>
+    <script src="js/cupola_viewer.js"></script>
   </body>
 </html>
