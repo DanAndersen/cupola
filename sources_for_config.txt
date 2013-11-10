@@ -1,0 +1,19 @@
+{
+    "FOV"                       : 125.871,                          (calculated from other data)
+    "hScreenSize"               : 0.14976,                          (from GetDeviceInfo)
+    "vScreenSize"               : 0.0935,                           (from GetDeviceInfo)
+    "vScreenCenter"             : 0.0468,                           (from GetDeviceInfo)
+    "eyeToScreenDistance"       : 0.041,                            (from GetDeviceInfo)
+    "lensSeparationDistance"    : 0.067,                            (from GetDeviceInfo)
+    "interpupillaryDistance"    : 0.0675,                           (from Profile)
+    "hResolution"               : 1280,                             (from GetDeviceInfo)
+    "vResolution"               : 720,                              (from GetDeviceInfo)
+    "distortionK"               : [1, .22, .24, 0],                 (from GetDeviceInfo)
+    "chromaAbParameter"         : [0.996, -0.004, 1.014, 0]         (from GetDeviceInfo)
+}
+
+additional fields:
+{
+    "gender"                    : "Male",                           (from Profile)
+    "playerHeight"              : 1.803400                          (from Profile)
+}  
