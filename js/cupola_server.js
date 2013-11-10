@@ -38,6 +38,11 @@ var CupolaServer = function() {
 	function resetSensors() {
 		mTrackerMessage = new TrackerMessage();
 		mSensorFusion = new SensorFusion();
+
+
+		mSensorFusion.loadMagCalibration("default");
+
+
 	}
 
 

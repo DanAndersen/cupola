@@ -6,8 +6,19 @@ var SensorFusion = function() {
 	var mEnableGravity = true;
 	var mEnableYawCorrection = false;
 	var mMotionTrackingEnabled = true;
-	var mMagCalibrated = false;
 	
+	//===========================================================================
+	// Calibration
+
+	// when loaded from calibration, this will be different
+	var mMagCalibrationMatrix = new THREE.Matrix4().identity();
+	var mMagCalibrationTime;
+	var mMagCalibrated = false;
+
+	var MAX_DEVICE_PROFILE_MAJOR_VERSION = 1;
+
+	//===========================================================================
+
 	var mGain = 0.05;
 
 	var mPredictionDT = 0.03;	// default lookahead time in seconds
@@ -18,9 +29,6 @@ var SensorFusion = function() {
 	var mFAngV = new SensorFilterVector3(10);
 
 	var mTiltAngleFilter = new SensorFilterScalar(1000);
-
-	// when loaded from calibration, this will be different
-	var mMagCalibrationMatrix = new THREE.Matrix4().identity();
 
 	var mDeltaT = 0;
 	var mAngV = new THREE.Vector3();
@@ -275,6 +283,122 @@ var SensorFusion = function() {
 
 
 
+
+	// Store the calibration matrix for the magnetometer
+	// m is Matrix4f
+	var setMagCalibration = function(m) {
+		mMagCalibrationMatrix.copy(m);
+		mMagCalibrationTime = new Date();
+		mMagCalibrated = true;
+	};
+
+	// http://stackoverflow.com/questions/3362471/how-can-i-call-a-javascript-constructor-using-call-or-apply
+	function applyToConstructor(constructor, argArray) {
+    var args = [null].concat(argArray);
+    var factoryFunction = constructor.bind.apply(constructor, args);
+    return new factoryFunction();
+	}
+
+	// Loads a saved calibration for the specified device from the device profile file
+	// original function loads from file -- this one will be given the JSON
+	var loadMagCalibration = function(calibrationName) {
+
+		// A named calibration may be specified for calibration in different
+    // environments, otherwise the default calibration is used
+    calibrationName = typeof calibrationName !== 'undefined' ? calibrationName : "default";
+
+    // Load the device profiles from Devices.json
+
+    // TODO: mocking JSON of Devices.json here
+    var root = {
+			"Oculus Device Profile Version":	"1.0",
+			"Device":	{
+				"Product":	"Tracker DK",
+				"ProductID":	1,
+				"Serial":	"OOKAI3TGQK37",
+				"EnableYawCorrection":	true,
+				"MagCalibration":	{
+					"Version":	"2.0",
+					"Name":	"default",
+					"Time":	"2013-10-12 08:07:58",
+					"CalibrationMatrix":	"1.64133 0.0141079 -0.0108806 -0.166527 0.0141079 1.41594 -0.0342712 0.643716 -0.0108806 -0.0342712 1.56853 1.05617 0 0 0 1 ",
+					"Calibration":	"1 0 0 -0.100989 0 1 0 0.472158 0 0 1 0.682966 0 0 0 1 "
+				}
+			}
+		};
+
+		if (root === null) {
+			return false;
+		}
+
+		// Quick sanity check of the file type and format before we parse it
+		if (root.hasOwnProperty("Oculus Device Profile Version")) {
+			var major = parseFloat(root["Oculus Device Profile Version"]);
+			if (major > MAX_DEVICE_PROFILE_MAJOR_VERSION) {
+				return false; 	// don't parse the file on unsupported major version number
+			}
+		} else {
+			return false;
+		}
+
+		var autoEnableCorrection = false;
+
+		// TODO: how to handle multiple devices?
+
+		// Search for a previous calibration with the same name for this device
+    // and remove it before adding the new one
+		var device = root["Device"];
+
+		if (device !== null) {
+			var serial = device["Serial"];
+
+			if (true) {	// TODO, need to check our serial against CachedSensorInfo.SerialNumber
+				// found an entry for this device
+
+				if(device["EnableYawCorrection"]) {
+					autoEnableCorrection = true;
+				}
+
+				var maxCalibrationVersion = 0;
+				var magCalibration = device["MagCalibration"];
+				if (magCalibration && magCalibration["Name"] === calibrationName) {
+					// found a calibration of the same name
+
+					var major = 0;
+					var magCalibrationVersion = magCalibration["Version"];
+					if (magCalibrationVersion) {
+						major = parseFloat(magCalibrationVersion);
+					}
+
+					if (major > maxCalibrationVersion && major <= 2) {
+
+						var calibration_time = magCalibration["Time"] ? new Date(magCalibration["Time"]) : new Date();
+
+						// parse the calibration matrix
+						var cal = magCalibration["CalibrationMatrix"];
+						if (!cal) {
+							cal = magCalibration["Calibration"];
+						}
+
+						if (cal) {
+							var calmatArray = cal.trim().split(" ").map(parseFloat);
+							var calmat = applyToConstructor(THREE.Matrix4, calmatArray);
+							setMagCalibration(calmat);
+							mMagCalibrationTime = calibration_time;
+							mEnableYawCorrection = autoEnableCorrection;
+
+							maxCalibrationVersion = major;
+						}
+					}
+				}
+				return (maxCalibrationVersion > 0);
+			}
+		}
+		return false;
+	};
+
+
+
 	var deltaQP = new THREE.Quaternion();
 	var qP = new THREE.Quaternion();
 
@@ -328,6 +452,7 @@ var SensorFusion = function() {
 	return {
 		'handleMessage': handleMessage,
 		'getPredictedOrientation': getPredictedOrientation,
-		'updateOrientationFromTrackerMessage': updateOrientationFromTrackerMessage
+		'updateOrientationFromTrackerMessage': updateOrientationFromTrackerMessage,
+		'loadMagCalibration': loadMagCalibration
 	};
 };

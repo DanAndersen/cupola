@@ -5,11 +5,11 @@
   "manifest_version": 2,
   "minimum_chrome_version": "26",
   "icons": {
-    "128": "cupola-128.png"
+    "128": "images/cupola-128.png"
   },
   "app": {
     "background": {
-      "scripts": ["background.js"]
+      "scripts": ["js/background.js"]
     }
   },
   "permissions": ["usb", "webview", "fullscreen"],
