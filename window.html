@@ -6,15 +6,16 @@
   </head>
   <body>
     
+    <!-- <div id="devices-upload-area">Drag and drop to add your config here.</div> -->
+
     <webview id="sim-webview" src="http://localhost:8090/chrome_app/examples/first_person.html?aadf"></webview>
-
-
    
-    <script src='lib/three.min.js'></script>
-    
+    <!-- Third-party libraries -->
+    <script src='lib/three.min.js'></script>    
     <script src='lib/dat.gui.min.js'></script>
+    <script src='lib/dropzone.min.js'></script>
 
-
+    <!-- Cupola components -->
     <script src="js/components/sensor_filter_scalar.js"></script>
     <script src="js/components/sensor_filter_vector3.js"></script>
     <script src="js/components/tracker_message.js"></script>

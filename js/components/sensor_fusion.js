@@ -302,10 +302,11 @@ var SensorFusion = function() {
 	// Loads a saved calibration for the specified device from the device profile file
 	// original function loads from file -- this one will be given the JSON
 	var loadMagCalibration = function(calibrationName) {
-
 		// A named calibration may be specified for calibration in different
     // environments, otherwise the default calibration is used
     calibrationName = typeof calibrationName !== 'undefined' ? calibrationName : "default";
+
+    console.log("loading mag calibration for '" + calibrationName + "'");
 
     // Load the device profiles from Devices.json
 
