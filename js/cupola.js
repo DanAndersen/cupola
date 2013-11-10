@@ -47,10 +47,7 @@ var Cupola = function(config) {
 
 	var mIsConnected = false;	// true if the app wants to process incoming messages
 
-	var mIsActive = false;	// true if data has been received recently
-
 	var mDebugEnabled = config.hasOwnProperty("debug") ? config["debug"] : false;
-	var mTimeoutMillis = config.hasOwnProperty("timeout") ? config["timeout"] : 1000;
 
 	var mTimeoutId;
 
@@ -58,9 +55,7 @@ var Cupola = function(config) {
 		onOrientationUpdate: null,
 		onConfigUpdate: null,
 		onConnect: null,
-		onDisconnect: null,
-		onActive: null,
-		onInactive: null
+		onDisconnect: null
 	};
 
 	// hook up callbacks specified in config
@@ -84,30 +79,6 @@ var Cupola = function(config) {
 			if (callbacks["onConnect"]) {
 				debug("invoking onConnect callback");
 				callbacks["onConnect"]();
-			}
-		}
-	};
-
-	var onInactive = function() {
-		debug("have not received message in a while, marking as inactive");
-		if (mIsActive) {
-			mIsActive = false;
-			
-			if (callbacks["onInactive"]) {
-				debug("invoking onInactive callback");
-				callbacks["onInactive"]();
-			}
-		}
-	};
-
-	var onActive = function() {
-		if (!mIsActive) {
-			debug("started receiving messages, marking as active");
-			mIsActive = true;
-
-			if (callbacks["onActive"]) {
-				debug("invoking onActive callback");
-				callbacks["onActive"]();
 			}
 		}
 	};
@@ -172,8 +143,6 @@ var Cupola = function(config) {
 		  var receivedMessage = e.data;
 
 		  if (receivedMessage && typeof receivedMessage === 'object') {
-		  	onActive();
-
 		    var msgVersion = receivedMessage["version"];
 		    var msgType = receivedMessage["msg"];
 		    var msgData = receivedMessage["data"];
@@ -192,13 +161,6 @@ var Cupola = function(config) {
 		        break;
 		    }
 		  }
-
-		  // get rid of previous disconnect countdown and start again from current time
-		  if (mTimeoutId) {
-		  	clearTimeout(mTimeoutId);
-		  }
-		  mTimeoutId = setTimeout(onInactive, mTimeoutMillis);
-
 		}
 	});
 

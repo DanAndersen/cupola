@@ -425,13 +425,6 @@ var cupola = new Cupola({
   onDisconnect : bridgeDisconnected,
   onConfigUpdate : bridgeConfigUpdated,
   onOrientationUpdate : bridgeOrientationUpdated,
-  onActive : function () {
-    console.log("cupola started receiving messages");
-  },
-  onInactive : function () {
-    console.log("cupola hasn't received messages in a while");
-  },
-  debug: false,
-  timeout: 2000
+  debug: false
 });
 cupola.connect();
