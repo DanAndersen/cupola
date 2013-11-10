@@ -31,6 +31,9 @@ var CupolaServer = function() {
 
 	var mRunning = false;
 
+	var mDevicesJson;
+	var mProfilesJson;
+
 	var mTrackerMessage;
 	var mSensorFusion;
 	resetSensors();
@@ -39,10 +42,9 @@ var CupolaServer = function() {
 		mTrackerMessage = new TrackerMessage();
 		mSensorFusion = new SensorFusion();
 
-
-		mSensorFusion.loadMagCalibration("default");
-
-
+		if (mDevicesJson) {
+			mSensorFusion.loadMagCalibration("default", mDevicesJson);
+		}
 	}
 
 
@@ -113,10 +115,10 @@ var CupolaServer = function() {
 
 	    else if (usbEvent.data) {
 	      buf = new Uint8Array(usbEvent.data);
-	      console.log("sendKeepAliveCompleted Buffer:", usbEvent.data.byteLength, buf);
+	      debug("sendKeepAliveCompleted Buffer:", usbEvent.data.byteLength, buf);
 
 	      if (!mConnected) {
-	        console.log("not already connected; connecting");
+	        debug("not already connected; connecting");
 	        mConnected = true;
 	      }
 	    }
@@ -124,7 +126,7 @@ var CupolaServer = function() {
 	};
 
 	var sendKeepAlive = function() {
-		console.log("sendKeepAlive()");
+		debug("sendKeepAlive()");
 		chrome.usb.controlTransfer(mRiftConnectionHandle, mKeepAliveTransferInfo, sendKeepAliveCompleted);
 	};
 
@@ -170,8 +172,6 @@ var CupolaServer = function() {
 
 
 	var sensorDataReceived = function(usbEvent) {
-		//console.log("sensorDataReceived()");
-	  //console.log("usbEvent", usbEvent);
 
 	  if (chrome.runtime.lastError) {
 	    console.error("sensorDataReceived Error:", chrome.runtime.lastError);
@@ -194,15 +194,10 @@ var CupolaServer = function() {
 		}
 	}
 
-	var log = function(logMessage) {
-		console.log(logMessage);
-	};
-
-
 	//-------------------
 
 	var initRift = function() {
-	  console.log("initRift()");
+	  debug("initRift()");
 
 	  if (!mRunning) {
 	  	mRunning = true;
@@ -219,16 +214,16 @@ var CupolaServer = function() {
 	};
 
 	var gotPermission = function() {
-		console.log("App was granted the 'usbDevices' permission.");
+		debug("App was granted the 'usbDevices' permission.");
 		mHasPermission = true;
 
 		chrome.usb.findDevices( DEVICE_INFO,
       function(devices) {
         if (!devices || !devices.length) {
-          console.log('device not found');
+          console.error('device not found');
           return;
         }
-        console.log('Found device: ' + devices[0].handle);
+        debug('Found device: ' + devices[0].handle);
         mRiftConnectionHandle = devices[0];
 
         initRift();
@@ -236,7 +231,7 @@ var CupolaServer = function() {
 	};
 
 	var connect = function() {
-		console.log("connect()");
+		debug("connect()");
 		
 		chrome.permissions.contains( mPermissionObj, function(result) {
 		  if (result) {
@@ -246,10 +241,10 @@ var CupolaServer = function() {
 	};
 
 	var disconnect = function() {
-		console.log("disconnect()");
+		debug("disconnect()");
 
 		if (mKeepAliveIntervalId) {
-			console.log("stopping keep-alive action");
+			debug("stopping keep-alive action");
 			clearInterval(mKeepAliveIntervalId);	
 		}
 		
@@ -263,11 +258,19 @@ var CupolaServer = function() {
 		return mPermissionObj;
 	};
 
+	var updateDeviceConfig = function(devicesJson) {
+		if (!devicesJson || typeof devicesJson !== 'object') {
+			return false;
+		}
+		return mSensorFusion.loadMagCalibration("default", devicesJson);
+	};
+
 	return {
 		"connect": connect,
 		"disconnect": disconnect,
 		"getPermissionObject": getPermissionObject,
 		"pollRiftSensors": pollRiftSensors,
+		"updateDeviceConfig": updateDeviceConfig,
 		"mPredictDt": mPredictDt
 	};
 

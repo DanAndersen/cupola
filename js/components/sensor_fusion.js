@@ -301,40 +301,22 @@ var SensorFusion = function() {
 
 	// Loads a saved calibration for the specified device from the device profile file
 	// original function loads from file -- this one will be given the JSON
-	var loadMagCalibration = function(calibrationName) {
+	var loadMagCalibration = function(calibrationName, devicesJson) {
 		// A named calibration may be specified for calibration in different
     // environments, otherwise the default calibration is used
     calibrationName = typeof calibrationName !== 'undefined' ? calibrationName : "default";
 
-    console.log("loading mag calibration for '" + calibrationName + "'");
-
+    log("loading mag calibration for '" + calibrationName + "'");
+    log(devicesJson);
     // Load the device profiles from Devices.json
 
-    // TODO: mocking JSON of Devices.json here
-    var root = {
-			"Oculus Device Profile Version":	"1.0",
-			"Device":	{
-				"Product":	"Tracker DK",
-				"ProductID":	1,
-				"Serial":	"OOKAI3TGQK37",
-				"EnableYawCorrection":	true,
-				"MagCalibration":	{
-					"Version":	"2.0",
-					"Name":	"default",
-					"Time":	"2013-10-12 08:07:58",
-					"CalibrationMatrix":	"1.64133 0.0141079 -0.0108806 -0.166527 0.0141079 1.41594 -0.0342712 0.643716 -0.0108806 -0.0342712 1.56853 1.05617 0 0 0 1 ",
-					"Calibration":	"1 0 0 -0.100989 0 1 0 0.472158 0 0 1 0.682966 0 0 0 1 "
-				}
-			}
-		};
-
-		if (root === null) {
+		if (devicesJson === null) {
 			return false;
 		}
 
 		// Quick sanity check of the file type and format before we parse it
-		if (root.hasOwnProperty("Oculus Device Profile Version")) {
-			var major = parseFloat(root["Oculus Device Profile Version"]);
+		if (devicesJson.hasOwnProperty("Oculus Device Profile Version")) {
+			var major = parseFloat(devicesJson["Oculus Device Profile Version"]);
 			if (major > MAX_DEVICE_PROFILE_MAJOR_VERSION) {
 				return false; 	// don't parse the file on unsupported major version number
 			}
@@ -348,53 +330,61 @@ var SensorFusion = function() {
 
 		// Search for a previous calibration with the same name for this device
     // and remove it before adding the new one
-		var device = root["Device"];
+		var devices = devicesJson["Device"];
+		log("devices:", devices);
 
-		if (device !== null) {
-			var serial = device["Serial"];
+		for (var i = 0; i < devices.length; i++) {
+			var device = devices[i];
 
-			if (true) {	// TODO, need to check our serial against CachedSensorInfo.SerialNumber
-				// found an entry for this device
+			if (device !== null) {
+				var serial = device["Serial"];
 
-				if(device["EnableYawCorrection"]) {
-					autoEnableCorrection = true;
-				}
+				if (true) {	// TODO, need to check our serial against CachedSensorInfo.SerialNumber
+					// found an entry for this device
 
-				var maxCalibrationVersion = 0;
-				var magCalibration = device["MagCalibration"];
-				if (magCalibration && magCalibration["Name"] === calibrationName) {
-					// found a calibration of the same name
-
-					var major = 0;
-					var magCalibrationVersion = magCalibration["Version"];
-					if (magCalibrationVersion) {
-						major = parseFloat(magCalibrationVersion);
+					if(device["EnableYawCorrection"]) {
+						autoEnableCorrection = true;
 					}
 
-					if (major > maxCalibrationVersion && major <= 2) {
+					var maxCalibrationVersion = 0;
+					var magCalibration = device["MagCalibration"];
+					if (magCalibration && magCalibration["Name"] === calibrationName) {
+						// found a calibration of the same name
 
-						var calibration_time = magCalibration["Time"] ? new Date(magCalibration["Time"]) : new Date();
-
-						// parse the calibration matrix
-						var cal = magCalibration["CalibrationMatrix"];
-						if (!cal) {
-							cal = magCalibration["Calibration"];
+						var major = 0;
+						var magCalibrationVersion = magCalibration["Version"];
+						if (magCalibrationVersion) {
+							major = parseFloat(magCalibrationVersion);
 						}
 
-						if (cal) {
-							var calmatArray = cal.trim().split(" ").map(parseFloat);
-							var calmat = applyToConstructor(THREE.Matrix4, calmatArray);
-							setMagCalibration(calmat);
-							mMagCalibrationTime = calibration_time;
-							mEnableYawCorrection = autoEnableCorrection;
+						if (major > maxCalibrationVersion && major <= 2) {
 
-							maxCalibrationVersion = major;
+							var calibration_time = magCalibration["Time"] ? new Date(magCalibration["Time"]) : new Date();
+
+							// parse the calibration matrix
+							var cal = magCalibration["CalibrationMatrix"];
+							if (!cal) {
+								cal = magCalibration["Calibration"];
+							}
+
+							if (cal) {
+								var calmatArray = cal.trim().split(" ").map(parseFloat);
+								log("calmatArray", calmatArray);
+								var calmat = applyToConstructor(THREE.Matrix4, calmatArray);
+								setMagCalibration(calmat);
+								mMagCalibrationTime = calibration_time;
+								mEnableYawCorrection = autoEnableCorrection;
+
+								maxCalibrationVersion = major;
+							}
 						}
 					}
+					return (maxCalibrationVersion > 0);
 				}
-				return (maxCalibrationVersion > 0);
 			}
+
 		}
+		
 		return false;
 	};
 
