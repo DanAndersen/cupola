@@ -1,12 +1,12 @@
-
 var usb = new CupolaServer();
 
 var webview = document.getElementById("sim-webview");
-
 var urlTextInput = document.getElementById("url-bar");
 var urlSubmitButton = document.getElementById("url-submit");
 
+var LATEST_CUPOLA_MESSAGE_VERSION = "1";
 
+//===========================
 
 var submitUrl = function(newUrl) {
 
@@ -19,9 +19,6 @@ var submitUrl = function(newUrl) {
 	webview.src = newUrl;
 };
 
-
-
-
 function viewerToggleFullscreen() {
 	console.log("toggling fullscreen");
 
@@ -33,9 +30,6 @@ function viewerToggleFullscreen() {
 		appWindow.fullscreen();
 	}
 }
-
-
-
 
 function viewerConnect() {
 	console.log("connect button pressed");
@@ -50,20 +44,44 @@ function viewerConnect() {
   });
 }
 
-
 function viewerDisconnect() {
 	console.log("disconnect button pressed");
 	usb.disconnect();
 }
 
+function viewerSendConfig() {
+	console.log("sending config to simulation");
+	var cupolaConfig = new CupolaConfig();
 
-
-
-
-var sendOrientationToSimulation = function(quat) {
-	webview.contentWindow.postMessage({x: quat._x, y: quat._y, z: quat._z, w: quat._w}, '*');
+	sendConfigToSimulation(cupolaConfig);
 }
 
+//===========================
+
+var postMessageToSimulation = function(msgObject) {
+	webview.contentWindow.postMessage(msgObject, '*');
+}
+
+var sendConfigToSimulation = function(configObject) {
+	postMessageToSimulation({
+		version: LATEST_CUPOLA_MESSAGE_VERSION,
+		msg: "config",
+		data: configObject
+	});
+}
+
+var sendOrientationToSimulation = function(quat) {
+	postMessageToSimulation({
+		version: LATEST_CUPOLA_MESSAGE_VERSION,
+		msg: "quat",
+		data: {
+			x: quat._x, 
+			y: quat._y, 
+			z: quat._z, 
+			w: quat._w
+		}
+	});
+}
 
 //----------------------------
 
@@ -74,12 +92,14 @@ var gui = new dat.GUI();
 var actionGuiFolder = gui.addFolder('Actions');
 
 var actionObj = {
+	sendConfig: viewerSendConfig,
 	connect: viewerConnect,
 	disconnect: viewerDisconnect,
 	toggleFullscreen: viewerToggleFullscreen,
 	url: "google.com"
 };
 
+actionGuiFolder.add(actionObj, 'sendConfig').name("Send Config");
 actionGuiFolder.add(actionObj, 'connect').name("Connect to Rift");
 actionGuiFolder.add(actionObj, 'disconnect').name("Disconnect from Rift");
 actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");

@@ -14,7 +14,7 @@ var CupolaConfig = function(inputs) {
 
 	var DEFAULT_HRES = 1280;
 	var DEFAULT_VRES = 800;
-	var DEFAULT_PLAYER_HEIGHT = 1.778;;
+	var DEFAULT_PLAYER_HEIGHT = 1.778;
 	var DEFAULT_GENDER = "Unspecified";
 	var DEFAULT_IPD = 0.064;
 

@@ -225,9 +225,6 @@ function updateHMDResolution(width, height) {
   riftCam.setHMD(hmdConfig);
 }
 
-
-
-
 function bridgeConnected(){
   document.getElementById("logo").className = "";
 }
@@ -239,6 +236,7 @@ function bridgeDisconnected(){
 function bridgeConfigUpdated(config){
   console.log("Oculus config updated.");
   riftCam.setHMD(config);      
+  onResize();
 }
 
 var quat = new THREE.Quaternion();
@@ -248,7 +246,7 @@ var xzVector = new THREE.Vector3(0, 0, 1);
 function bridgeOrientationUpdated(quatValues) {
   // Do first-person style controls (like the Tuscany demo) using the rift and keyboard.
 
-  // TODO: Don't instantiate new objects in here, these should be re-used to avoid garbage collection.
+  // Don't instantiate new objects in here, these should be re-used to avoid garbage collection.
 
   // make a quaternion for the the body angle rotated about the Y axis.
   //var quat = new THREE.Quaternion();
@@ -419,9 +417,21 @@ window.onload = function() {
 
 
 
+//==================
+// Cupola client
 
-
-
-window.addEventListener('message', function(e) {
-  bridgeOrientationUpdated(e.data);
+var cupola = new Cupola({
+  onConnect : bridgeConnected,
+  onDisconnect : bridgeDisconnected,
+  onConfigUpdate : bridgeConfigUpdated,
+  onOrientationUpdate : bridgeOrientationUpdated,
+  onActive : function () {
+    console.log("cupola started receiving messages");
+  },
+  onInactive : function () {
+    console.log("cupola hasn't received messages in a while");
+  },
+  debug: false,
+  timeout: 2000
 });
+cupola.connect();

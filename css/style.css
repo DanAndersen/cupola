@@ -1,4 +1,5 @@
 #sim-webview {
+	/* stretching webview for simulation to fill entire area */
 	width: 100%;
 	height: 100%;
   overflow-x: hidden;
@@ -6,6 +7,7 @@
 }
 
 body {
+	/* removing app edges from Chrome app */
 	margin: 0;
 }
 
@@ -20,4 +22,10 @@ body {
 	left: 50%;
 	top: 50%;
 	margin: -100px 0 0 -150px;
+}
+
+
+/* making function buttons in dat.gui wider */
+.dg .function .property-name {
+	width: 100% !important;
 }
