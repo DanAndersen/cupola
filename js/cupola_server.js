@@ -106,7 +106,12 @@ var CupolaServer = function() {
 	  }
 
 	  if (usbEvent) {
-	    if (usbEvent.data) {
+	  	if (usbEvent.resultCode !== 0) {
+	      console.error("Error writing to device", usbEvent.resultCode);
+	      disconnect();
+	    }
+
+	    else if (usbEvent.data) {
 	      buf = new Uint8Array(usbEvent.data);
 	      console.log("sendKeepAliveCompleted Buffer:", usbEvent.data.byteLength, buf);
 
@@ -114,9 +119,6 @@ var CupolaServer = function() {
 	        console.log("not already connected; connecting");
 	        mConnected = true;
 	      }
-	    }
-	    if (usbEvent.resultCode !== 0) {
-	      console.error("Error writing to device", usbEvent.resultCode);
 	    }
 	  }
 	};
@@ -176,13 +178,12 @@ var CupolaServer = function() {
 	  }
 
 	  if (usbEvent) {
-	    if (usbEvent.data) {
-	      //console.log("sensorDataReceived Buffer:", usbEvent.data.byteLength);   
-
-	      process(usbEvent.data);
+	  	if (usbEvent.resultCode !== 0) {
+	      console.error("Error receiving from device; disconnecting", usbEvent.resultCode);
+	      disconnect();
 	    }
-	    if (usbEvent.resultCode !== 0) {
-	      console.error("Error receiving from device", usbEvent.resultCode);
+	    else if (usbEvent.data) {
+	      process(usbEvent.data);
 	    }
 	  }
 	};
