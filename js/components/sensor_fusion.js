@@ -72,15 +72,18 @@ var SensorFusion = function() {
 		log("sensor timedelta: " + mSensors.timeDelta);
 
 		for (var i = 0; i < iterations; i++) {
-			log("iteration #" + i);
 			mSensors.setAcceleration(trackerMessage.getSamples()[i].mAcc);
 			mSensors.setRotationRate(trackerMessage.getSamples()[i].mGyro);
 			mSensors.setMagneticField(trackerMessage.getMag());
 			mSensors.setTemperature(trackerMessage.getTemperature());
-			log("\tacceleration: " + JSON.stringify(mSensors.acceleration));
-			log("\tRotationRate: " + JSON.stringify(mSensors.rotationRate));
-			log("\tMagneticField: " + JSON.stringify(mSensors.magneticField));
-			log("\tTemperature: " + mSensors.temperature);
+
+			if (mLoggingEnabled) {
+				log("iteration #" + i);
+				log("\tacceleration: " + JSON.stringify(mSensors.acceleration));
+				log("\tRotationRate: " + JSON.stringify(mSensors.rotationRate));
+				log("\tMagneticField: " + JSON.stringify(mSensors.magneticField));
+				log("\tTemperature: " + mSensors.temperature);
+			}
 
 			handleMessage(mSensors);
 

@@ -11,19 +11,27 @@ body {
 	margin: 0;
 }
 
-#devices-upload-area {
-	background-color: white;
+#cupola-dropzone {
+	border-style: dashed;
+	border-width: 5px;
+	border-color: gray;
+	border-radius: 25px;
 
 	margin: 0 auto;
-	width: 300px;
+	width: 90%;
 	height: 200px;
-	position: absolute;
+	/* position: absolute;*/
 
-	left: 50%;
-	top: 50%;
-	margin: -100px 0 0 -150px;
+	/* left: 50%; */
+	/* top: 50%; */
+	/*margin: -100px 0 0 -150px;*/
 }
 
+.dz-message {
+	margin: 0 auto;
+	width: 100%;
+	text-align: center;
+}
 
 /* making function buttons in dat.gui wider */
 .dg .function .property-name {

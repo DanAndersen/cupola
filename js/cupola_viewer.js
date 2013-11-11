@@ -90,7 +90,7 @@ function viewerSendConfig() {
 
 var postMessageToSimulation = function(msgObject) {
 	webview.contentWindow.postMessage(msgObject, '*');
-}
+};
 
 var sendConfigToSimulation = function(configObject) {
 	postMessageToSimulation({
@@ -98,7 +98,7 @@ var sendConfigToSimulation = function(configObject) {
 		msg: "config",
 		data: configObject
 	});
-}
+};
 
 var sendOrientationToSimulation = function(quat) {
 	postMessageToSimulation({
@@ -111,14 +111,20 @@ var sendOrientationToSimulation = function(quat) {
 			w: quat._w
 		}
 	});
-}
+};
 
 var viewerUpdateDeviceConfig = function() {
 	console.log("viewerUpdateDeviceConfig()");
 	var devicesJson = parseWithDuplicateDevices(devicesText);
 
 	usb.updateDeviceConfig(devicesJson);
-}
+};
+
+var viewerUploadConfigFiles = function() {
+	$('#config-upload-modal').modal();
+
+	var cupolaDropzone = new Dropzone("#cupola-dropzone");
+};
 
 //----------------------------
 
@@ -134,7 +140,8 @@ var actionObj = {
 	disconnect: viewerDisconnect,
 	toggleFullscreen: viewerToggleFullscreen,
 	url: "google.com",
-	updateDeviceConfig: viewerUpdateDeviceConfig
+	updateDeviceConfig: viewerUpdateDeviceConfig,
+	uploadConfigFiles: viewerUploadConfigFiles
 };
 
 actionGuiFolder.add(actionObj, 'sendConfig').name("Send Config");
@@ -145,6 +152,7 @@ actionGuiFolder.add(actionObj, 'url').name("URL").onFinishChange(function(newUrl
 	submitUrl(newUrl);
 });
 actionGuiFolder.add(actionObj, 'updateDeviceConfig').name("Update Device Config");
+actionGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files");
 actionGuiFolder.open();
 
 var configGuiFolder = gui.addFolder('Config');
@@ -268,3 +276,14 @@ function parseWithDuplicateDevices(text) {
 
 var profilesJson = parseWithDuplicateProfiles(profilesText);
 var devicesJson = parseWithDuplicateDevices(devicesText);
+
+
+//=============
+// Drag-and-drop upload
+
+Dropzone.options.cupolaDropzone = {
+	dictDefaultMessage: "Drop Oculus configuration files here to upload",
+	autoProcessQueue: false
+};
+
+Dropzone.autoDiscover = false;

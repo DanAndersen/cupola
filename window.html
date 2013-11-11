@@ -1,12 +1,50 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Cupole VR Viewer</title>
+    <title>Cupola VR Viewer</title>
     <link href="css/style.css" rel="stylesheet" type="text/css">
+
+    <link href="css/basic.css" rel="stylesheet" type="text/css">
   </head>
   <body>
     
-    <!-- <div id="devices-upload-area">Drag and drop to add your config here.</div> -->
+
+    <!-- modal content -->
+    <div id="config-upload-modal">
+        <h3>Drag and Drop Your Oculus Rift Configuration</h3>
+
+        <p>To use your calibration and profile data, drag and drop your <strong>Devices.json</strong> and <strong>Profiles.json</strong> files into the region below. These files are located in the following directories, depending on your operating system:</p>
+
+        <ul>
+            <li><strong>Windows:</strong> C:\User\<em>&lt;username&gt;</em>\AppData\Local\Oculus</li>
+            <li><strong>OSX:</strong> /Library/Preferences/Oculus</li>
+            <li><strong>Linux:</strong> /home/<em>&lt;username&gt;</em>/.config/Oculus</li>
+        </ul>
+
+        <form action="#" class="dropzone" id="cupola-dropzone">
+        </form>
+
+    </div>
+
+    <!-- preload the images -->
+    <div style='display:none'>
+        <img src='images/basic/x.png' alt='' />
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <webview id="sim-webview" src="http://localhost:8090/chrome_app/examples/first_person.html?aadf"></webview>
    
@@ -14,6 +52,8 @@
     <script src='lib/three.min.js'></script>    
     <script src='lib/dat.gui.min.js'></script>
     <script src='lib/dropzone.min.js'></script>
+    <script src='lib/jquery.js'></script>
+    <script src='lib/jquery.simplemodal.js'></script>
 
     <!-- Cupola components -->
     <script src="js/components/sensor_filter_scalar.js"></script>
