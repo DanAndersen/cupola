@@ -6,8 +6,8 @@ chrome.app.runtime.onLaunched.addListener(function() {
 	  // createwindowoptions
 	  {
 	    'bounds': {
-	      'width': 800,
-	      'height': 600
+	      'width': 1024,
+	      'height': 720
 	    },
 	    //frame: 'none'	// removes minimize/maximize/close buttons too
 	  },

@@ -120,10 +120,50 @@ var viewerUpdateDeviceConfig = function() {
 	usb.updateDeviceConfig(devicesJson);
 };
 
+var uploadStatusDiv = document.getElementById("upload-status");
+
+var onConfigFileUploaded = function(filename, jsonString) {
+	if (jsonString.indexOf("Oculus Device Profile Version") >= 0) {
+		devicesText = jsonString;
+
+		uploadStatusDiv.innerHTML += "<p class='upload-success'>Set device config from " + filename + "</p>";
+
+		viewerUpdateDeviceConfig();
+	} else if (jsonString.indexOf("Oculus Profile Version") >= 0) {
+		profilesText = jsonString;
+
+		uploadStatusDiv.innerHTML += "<p class='upload-success'>Set profile config from " + filename + "</p>";
+
+		viewerSendConfig();
+	} else {
+		console.error("not a valid config file");
+
+		uploadStatusDiv.innerHTML += "<p class='upload-error'>" + filename + " was not a valid config file</p>";
+	}
+};
+
+
 var viewerUploadConfigFiles = function() {
 	$('#config-upload-modal').modal();
 
 	var cupolaDropzone = new Dropzone("#cupola-dropzone");
+	cupolaDropzone.on("addedfile", function(file) {
+		console.log("added file:", file);
+
+		var reader = new FileReader();
+
+		reader.onload = (function(theFile) {
+			return function(e) {
+				console.log("read file " + file.name);
+				console.log("result: ", e.target.result);
+
+				onConfigFileUploaded(file.name, e.target.result);
+			};
+		})(file);
+
+		reader.readAsText(file);
+
+	});
 };
 
 //----------------------------
@@ -159,9 +199,6 @@ var configGuiFolder = gui.addFolder('Config');
 
 configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec)");
 
-
-
-
 //===========================
 
 
@@ -170,60 +207,9 @@ configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec
 
 
 
-var profilesText = '{ \
-	"Oculus Profile Version":	1, \
-	"CurrentProfile":	"Daniel Andersen", \
-	"ProfileCount":	2, \
-	"Profile":	{ \
-		"Name":	"Daniel Andersen", \
-		"Gender":	"Male", \
-		"PlayerHeight":	1.803400, \
-		"IPD":	0.068200, \
-		"RiftDK1":	{ \
-			"EyeCup":	"A", \
-			"LL":	180, \
-			"LR":	617, \
-			"RL":	685, \
-			"RR":	1108 \
-		} \
-	}, \
-	"Profile":	{ \
-		"Name":	"secondary test", \
-		"Gender":	"Unspecified", \
-		"PlayerHeight":	1.778000, \
-		"IPD":	0.064000 \
-	} \
-}';
+var profilesText;
 
-var devicesText = '{ \
-	"Oculus Device Profile Version":	"1.0", \
-	"Device":	{ \
-		"Product":	"Tracker DK", \
-		"ProductID":	1, \
-		"Serial":	"OOKAI3TGQK37", \
-		"EnableYawCorrection":	true, \
-		"MagCalibration":	{ \
-			"Version":	"2.0", \
-			"Name":	"default", \
-			"Time":	"2013-10-12 08:07:58", \
-			"CalibrationMatrix":	"1.64133 0.0141079 -0.0108806 -0.166527 0.0141079 1.41594 -0.0342712 0.643716 -0.0108806 -0.0342712 1.56853 1.05617 0 0 0 1 ", \
-			"Calibration":	"1 0 0 -0.100989 0 1 0 0.472158 0 0 1 0.682966 0 0 0 1 " \
-		} \
-	}, \
-	"Device":	{ \
-		"Product":	"Another Product", \
-		"ProductID":	2, \
-		"Serial":	"SOME-OTHER-SERIAL", \
-		"EnableYawCorrection":	true, \
-		"MagCalibration":	{ \
-			"Version":	"2.0", \
-			"Name":	"default", \
-			"Time":	"2013-10-12 08:07:58", \
-			"CalibrationMatrix":	"1.64133 0.0141079 -0.0108806 -0.166527 0.0141079 1.41594 -0.0342712 0.643716 -0.0108806 -0.0342712 1.56853 1.05617 0 0 0 1 ", \
-			"Calibration":	"1 0 0 -0.100989 0 1 0 0.472158 0 0 1 0.682966 0 0 0 1 " \
-		} \
-	} \
-}';
+var devicesText;
 
 
 //===============================
@@ -271,11 +257,6 @@ function parseWithDuplicateDevices(text) {
 
 	return JSON.parse(text);
 }
-
-
-
-var profilesJson = parseWithDuplicateProfiles(profilesText);
-var devicesJson = parseWithDuplicateDevices(devicesText);
 
 
 //=============

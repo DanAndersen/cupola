@@ -37,3 +37,15 @@ body {
 .dg .function .property-name {
 	width: 100% !important;
 }
+
+.dropzone {
+	min-height: 100px !important;
+}
+
+.upload-success {
+	color: green;
+}
+
+.upload-error {
+	color: red;
+}
