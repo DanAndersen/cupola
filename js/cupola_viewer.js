@@ -50,23 +50,31 @@ function viewerToggleFullscreen() {
 	}
 }
 
-function viewerConnect() {
-	console.log("connect button pressed");
-	chrome.permissions.request( usb.getPermissionObject(), function(result) {
-    if (result) {
-    	console.log("got permission");
-      usb.connect();
-    } else {
-      console.log('App was not granted the "usbDevices" permission.');
-      console.log(chrome.runtime.lastError);
-    }
-  });
-}
+var isConnected = false;
 
-function viewerDisconnect() {
-	console.log("disconnect button pressed");
-	usb.disconnect();
-}
+function viewerToggleConnect() {
+	console.log("toggle connect button pressed");
+
+	if (isConnected) {
+		console.log("disconnecting");
+		usb.disconnect();
+		isConnected = false;
+		toggleConnectController.name("Connect to Rift");
+	} else {
+		console.log("connecting");
+		chrome.permissions.request( usb.getPermissionObject(), function(result) {
+	    if (result) {
+	    	console.log("got permission");
+	      usb.connect();
+	      isConnected = true;
+	      toggleConnectController.name("Disconnect from Rift");
+	    } else {
+	      console.log('App was not granted the "usbDevices" permission.');
+	      console.log(chrome.runtime.lastError);
+	    }
+	  });
+	}
+};
 
 function viewerSendConfig() {
 	console.log("sending config to simulation");
@@ -176,28 +184,26 @@ var actionGuiFolder = gui.addFolder('Actions');
 
 var actionObj = {
 	sendConfig: viewerSendConfig,
-	connect: viewerConnect,
-	disconnect: viewerDisconnect,
+	toggleConnect: viewerToggleConnect,
 	toggleFullscreen: viewerToggleFullscreen,
 	url: "google.com",
 	updateDeviceConfig: viewerUpdateDeviceConfig,
 	uploadConfigFiles: viewerUploadConfigFiles
 };
 
-actionGuiFolder.add(actionObj, 'sendConfig').name("Send Config");
-actionGuiFolder.add(actionObj, 'connect').name("Connect to Rift");
-actionGuiFolder.add(actionObj, 'disconnect').name("Disconnect from Rift");
-actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
-actionGuiFolder.add(actionObj, 'url').name("URL").onFinishChange(function(newUrl) {
+var sendConfigController = actionGuiFolder.add(actionObj, 'sendConfig').name("Send Config");
+var toggleConnectController = actionGuiFolder.add(actionObj, 'toggleConnect').name("Connect to Rift");
+var toggleFullscreenController = actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
+var urlController = actionGuiFolder.add(actionObj, 'url').name("URL").onFinishChange(function(newUrl) {
 	submitUrl(newUrl);
 });
-actionGuiFolder.add(actionObj, 'updateDeviceConfig').name("Update Device Config");
-actionGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files");
+var updateDeviceConfigController = actionGuiFolder.add(actionObj, 'updateDeviceConfig').name("Update Device Config");
+var uploadConfigFilesController = actionGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files");
 actionGuiFolder.open();
 
 var configGuiFolder = gui.addFolder('Config');
 
-configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec)");
+var predictDtController = configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec)");
 
 //===========================
 
