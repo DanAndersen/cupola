@@ -191,19 +191,19 @@ var actionObj = {
 	uploadConfigFiles: viewerUploadConfigFiles
 };
 
-var sendConfigController = actionGuiFolder.add(actionObj, 'sendConfig').name("Send Config");
-var toggleConnectController = actionGuiFolder.add(actionObj, 'toggleConnect').name("Connect to Rift");
-var toggleFullscreenController = actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
 var urlController = actionGuiFolder.add(actionObj, 'url').name("URL").onFinishChange(function(newUrl) {
 	submitUrl(newUrl);
 });
-var updateDeviceConfigController = actionGuiFolder.add(actionObj, 'updateDeviceConfig').name("Update Device Config");
-var uploadConfigFilesController = actionGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files");
+var toggleConnectController = actionGuiFolder.add(actionObj, 'toggleConnect').name("Connect to Rift");
+var toggleFullscreenController = actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
+
 actionGuiFolder.open();
 
 var configGuiFolder = gui.addFolder('Config');
-
-var predictDtController = configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Orientation prediction (sec)");
+var uploadConfigFilesController = configGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files...");
+var sendConfigController = configGuiFolder.add(actionObj, 'sendConfig').name("Send Config to Simulation");
+//var updateDeviceConfigController = configGuiFolder.add(actionObj, 'updateDeviceConfig').name("Update Device Config");
+var predictDtController = configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Predict time (seconds)");
 
 //===========================
 
