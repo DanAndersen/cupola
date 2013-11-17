@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Cupola VR Example -- Rings</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link href='http://fonts.googleapis.com/css?family=Strait' rel='stylesheet' type='text/css'>
+    <link href='css/style.css' rel='stylesheet' type='text/css'>
+    <style>
+      
+      #info{
+        padding:10px;
+        color:#fff;
+        position:absolute;
+        background-color:rgba(0,0,0,0.4);
+      }
+
+      #help-text H1 {
+        font-size:18px;
+        margin-top:15px;
+
+      }
+      
+      #help-text DIV{
+        margin-bottom:5px;
+      }
+
+      #help-text DIV LABEL{
+        display:inline-block;
+        width:160px;
+      }
+
+      #help-text SECTION {
+        margin-top:20px;
+      }
+
+    </style>
+
+  </head>
+
+  <body>
+    <a id="logo" href="https://github.com/DanAndersen/cupola"></a>
+
+
+    <div id="info">
+      <div class="button" id="toggle-render">toggle render mode</div>      
+    </div>
+
+    <div id="viewport"></div>
+    
+    <script src="lib/three.min.r62.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+    <script src="lib/RiftCamera.js"></script>
+
+    <!-- Cupola VR client code -->
+    <script src="../web/src/cupola.js"></script>
+
+    <script src="js/rings.js"></script>
+  </body>
+</html>

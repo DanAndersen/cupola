@@ -21,7 +21,7 @@ If you have calibrated your Oculus Rift, you can drag and drop your configuratio
 ## Requirements 
 
 - An Oculus Rift
-- Google Chrome
+- Google Chrome (>= version 26)
 - The Cupola VR Viewer app, available on the Chrome Web Store
 - A URL to a VR webpage using cupola.js to handle incoming orientation data
 

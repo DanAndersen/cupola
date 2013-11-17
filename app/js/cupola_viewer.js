@@ -152,7 +152,7 @@ var onConfigFileUploaded = function(filename, jsonString) {
 
 
 var viewerUploadConfigFiles = function() {
-	$('#config-upload-modal').modal();
+	$('#modal-config-upload').modal();
 
 	var cupolaDropzone = new Dropzone("#cupola-dropzone");
 	cupolaDropzone.on("addedfile", function(file) {
@@ -172,6 +172,10 @@ var viewerUploadConfigFiles = function() {
 		reader.readAsText(file);
 
 	});
+};
+
+var viewerGettingStarted = function() {
+	$('#modal-help-intro').modal();
 };
 
 //----------------------------
@@ -198,6 +202,14 @@ var toggleConnectController = actionGuiFolder.add(actionObj, 'toggleConnect').na
 var toggleFullscreenController = actionGuiFolder.add(actionObj, 'toggleFullscreen').name("Toggle Fullscreen");
 
 actionGuiFolder.open();
+
+var helpGuiFolder = gui.addFolder('Help');
+
+var helpObj = {
+	gettingStarted: viewerGettingStarted
+};
+
+var gettingStartedController = helpGuiFolder.add(helpObj, 'gettingStarted').name("Getting Started");
 
 var configGuiFolder = gui.addFolder('Config');
 var uploadConfigFilesController = configGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files...");
