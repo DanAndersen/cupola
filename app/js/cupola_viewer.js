@@ -286,3 +286,19 @@ Dropzone.options.cupolaDropzone = {
 };
 
 Dropzone.autoDiscover = false;
+
+
+//------------
+
+var KEYCODE_ESC = 27;
+var onKeyUp = function(e) {
+	if (e.keyCode == KEYCODE_ESC) {
+		var appWindow = chrome.app.window.current();
+		// get out of fullscreen
+		if (appWindow.isFullscreen()) {
+			appWindow.restore();
+		}
+	}
+};
+
+document.addEventListener('keyup', onKeyUp, false);
