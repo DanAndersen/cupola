@@ -115,34 +115,9 @@ function initGeometry(){
     ];
 
   var reflectionCube = THREE.ImageUtils.loadTextureCube( urls );
-
-
-
-  // add rings
-
-  /*
-  var ringMaterial = new THREE.MeshPhongMaterial( { 
-    color: 0xffffff,
-    shading: THREE.FlatShading 
-  } );
-*/
-
-
-  
-
-
-
-
-
-
-
-
-
-
-
   
   var ringMaterial = new THREE.MeshPhongMaterial( { 
-    ambient: 0xffffff, 
+    ambient: 0x000000, 
     envMap: reflectionCube, 
     combine: THREE.MixOperation,
     reflectivity: 0.9,
@@ -151,7 +126,7 @@ function initGeometry(){
 
 
   var tubeDiameter = 20;
-  var segmentsAroundRadius = 4;
+  var segmentsAroundRadius = 3;
 
   var initialRingDistance = 250;
   var numRings = 20;
@@ -162,7 +137,7 @@ function initGeometry(){
 
     var torusGeometry = new THREE.TorusGeometry( torusRadius, tubeDiameter, segmentsAroundRadius, segmentsAroundTorus );
     torusGeometry.computeFaceNormals();
-    
+
     var ring = new THREE.Mesh( torusGeometry, ringMaterial);
 
     ring.rotation.set(
@@ -261,20 +236,21 @@ var parameters;
 var color, size;
 var materials = [];
 var particles;
+var particleSystems = [];
 function initParticles() {
 
   geometry = new THREE.Geometry();
-  for (var i = 0; i < 20000; i++) {
+  for (var i = 0; i < 200; i++) {
     var vertex = new THREE.Vector3();
-    vertex.x = Math.random() * SKYBOX_DISTANCE * 2 - SKYBOX_DISTANCE;
-    vertex.y = Math.random() * SKYBOX_DISTANCE * 2 - SKYBOX_DISTANCE;
-    vertex.z = Math.random() * SKYBOX_DISTANCE * 2 - SKYBOX_DISTANCE;
+    vertex.x = Math.random() * 500 * 2 - 500;
+    vertex.y = Math.random() * 500 * 2 - 500;
+    vertex.z = Math.random() * 500 * 2 - 500;
 
     geometry.vertices.push(vertex);
   }
 
   parameters = [
-    [ [1, 1, 0.5], 5 ],
+    [ [0.5, 0.5, 0.5], 5 ],
     [ [0.95, 1, 0.5], 4 ],
     [ [0.90, 1, 0.5], 3 ],
     [ [0.85, 1, 0.5], 2 ],
@@ -294,6 +270,7 @@ function initParticles() {
     particles.rotation.y = Math.random() * 6;
     particles.rotation.z = Math.random() * 6;
 
+    particleSystems.push(particles);
     scene.add( particles );
 
   }
@@ -330,11 +307,11 @@ function updateHMDResolution(width, height) {
 }
 
 function bridgeConnected(){
-  document.getElementById("logo").className = "";
+  console.log("ready to receive from Cupola");
 }
 
 function bridgeDisconnected(){
-  document.getElementById("logo").className = "offline";
+  console.log("no longer receiving from Cupola");
 }
 
 function bridgeConfigUpdated(config){
@@ -434,35 +411,26 @@ function animate() {
   updateInput(delta);
 
   for(var i = 0; i < rings.length; i++){
-    rings[i].rotation.x += delta * 0.25;
-    rings[i].rotation.y -= delta * 0.33;
-    rings[i].rotation.z += delta * 0.1278;
+    rings[i].rotation.x += delta * 0.25 * 0.5;
+    rings[i].rotation.y -= delta * 0.33 * 0.5;
+    rings[i].rotation.z += delta * 0.1278 * 0.5;
   }
 
   for(var i = 0; i < core.length; i++){
-    core[i].rotation.x += delta * 0.25 * 10;
-    core[i].rotation.y -= delta * 0.33 * 10;
-    core[i].rotation.z += delta * 0.1278 * 10;
+    core[i].rotation.x += delta * 0.25 * 3;
+    core[i].rotation.y -= delta * 0.33 * 3;
+    core[i].rotation.z += delta * 0.1278 * 3;
   }
 
-  for ( i = 0; i < scene.children.length; i ++ ) {
+  for ( i = 0; i < particleSystems.length; i ++ ) {
 
-    var object = scene.children[ i ];
+    var object = particleSystems[ i ];
 
     if ( object instanceof THREE.ParticleSystem ) {
 
-      //object.rotation.y = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+      object.rotation.y = time * ( i < 4 ? i + 1 : - ( i + 1 ) ) / 10;
 
     }
-
-  }
-
-  for ( i = 0; i < materials.length; i ++ ) {
-
-    color = parameters[i][0];
-
-    h = ( 360 * ( color[0] + time ) % 360 ) / 360;
-    materials[i].color.setHSL( h, color[1], color[2] );
 
   }
 
