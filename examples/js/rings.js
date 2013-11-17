@@ -1,6 +1,5 @@
 var renderer, camera;
 var scene, element;
-var ambient, point;
 var aspectRatio, windowHalf;
 var mouse, time;
 
@@ -79,7 +78,7 @@ function initSkybox() {
   var directions  = ["right1", "left2", "top3", "bottom4", "front5", "back6"];
   
 
-  var imageSuffix = ".png";
+  var imageSuffix = ".jpg";
   var skyGeometry = new THREE.CubeGeometry( SKYBOX_DISTANCE*2, SKYBOX_DISTANCE*2, SKYBOX_DISTANCE*2 ); 
 
   var materialArray = [];
@@ -96,11 +95,11 @@ function initSkybox() {
 
 function initLights(){
 
-  ambient = new THREE.AmbientLight(0x222222);
+  var ambient = new THREE.AmbientLight(0x222222);
   scene.add(ambient);
 
-  point = new THREE.DirectionalLight( 0xffffff, 1, 0, Math.PI, 1 );
-  point.position.set( -250, 250, 150 );
+  var point = new THREE.DirectionalLight( 0xffffff, 1, 0, Math.PI, 1 );
+  point.position.set( -2500, 2500, 1500 );
   
   scene.add(point);
 }
@@ -108,7 +107,7 @@ function initLights(){
 function initGeometry(){
 
   var path = "textures/skybox/space/space_";
-  var format = '.png';
+  var format = '.jpg';
   var urls = [
       path + "right1" + format, path + "left2" + format,
       path + "top3" + format, path + "bottom4" + format,
@@ -121,28 +120,50 @@ function initGeometry(){
 
   // add rings
 
+  /*
   var ringMaterial = new THREE.MeshPhongMaterial( { 
-    ambient: 0x112233, 
+    color: 0xffffff,
+    shading: THREE.FlatShading 
+  } );
+*/
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  
+  var ringMaterial = new THREE.MeshPhongMaterial( { 
+    ambient: 0xffffff, 
     envMap: reflectionCube, 
     combine: THREE.MixOperation,
     reflectivity: 0.9,
     shading: THREE.FlatShading 
   } );
 
+
   var tubeDiameter = 20;
-  var segmentsAroundRadius = 3;
+  var segmentsAroundRadius = 4;
 
   var initialRingDistance = 250;
   var numRings = 20;
   for (var i = 0; i < numRings; i++) {
     var torusRadius = initialRingDistance + (tubeDiameter * 2 * i);
 
-    var segmentsAroundTorus = 64 * (i+1);
-
+    var segmentsAroundTorus = 32 * (i+1);
 
     var torusGeometry = new THREE.TorusGeometry( torusRadius, tubeDiameter, segmentsAroundRadius, segmentsAroundTorus );
-
-    ring = new THREE.Mesh( torusGeometry, ringMaterial);
+    torusGeometry.computeFaceNormals();
+    
+    var ring = new THREE.Mesh( torusGeometry, ringMaterial);
 
     ring.rotation.set(
       Math.random() * Math.PI * 2, 
