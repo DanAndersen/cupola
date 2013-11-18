@@ -1,11 +1,11 @@
 
 Cupola VR Viewer
+================
 
 A Chrome packaged app using the USB API to expose Oculus Rift HMD head-tracking data to remote Web applications.
 
-
-
-## Background
+Background
+----------
 
 Cupola VR Viewer is a Chrome packaged app that connects the Oculus Rift to browser-based VR environments. It also allows developers to take advantage of WebGL for virtual reality and use Javascript libraries like [three.js](https://github.com/mrdoob/three.js/), while also offering low-latency head-tracking in a post-NPAPI browser world. 
 
@@ -18,31 +18,36 @@ Cupola acts as a container for remotely-hosted pages (such as WebGL demos) insid
 
 If you have calibrated your Oculus Rift, you can drag and drop your configuration files into the Cupola viewer to calibrate it.
 
-## Requirements 
+Requirements 
+------------
 
 - An Oculus Rift
 - Google Chrome (>= version 26)
 - The Cupola VR Viewer app, available on the Chrome Web Store
 - A URL to a VR webpage using cupola.js to handle incoming orientation data
 
-## Basic Usage
+Basic Usage
+-----------
 
 - Download and launch the Cupola VR Viewer app from the Chrome Web Store.
-- In the Cupola VR Viewer app, open an example page using one of these URLs:
-	- (example 1)
-	- (example 2)
+- In the Cupola VR Viewer app, open an example page using one of these URLs (paste the URL into the "URL" field in the viewer):
+	- [Rings](http://danandersen.bitbucket.org/rings.html) -- a simple WebGL demo with no movement controls, just orientation tracking.
+	- [Oculus Bridge First Person](http://danandersen.bitbucket.org/first_person.html) -- an existing demo created for oculus-bridge, adapted to work with Cupola.
 - Plug in your Oculus Rift.
-- Press "Connect" in the Cupola VR Viewer app.
+- Press "Connect" in the Cupola VR Viewer app. In the provided examples, you may need to click "toggle render mode" to get into Rift mode.
 
-
-## Supporting Cupola in Your VR Application
+Supporting Cupola in Your VR Application
+----------------------------------------
 
 Cupola was designed to be easy to integrate with existing projects, as well as to be compatible with existing solutions like [oculus-bridge](https://github.com/Instrument/oculus-bridge). 
 
-While the Cupola viewer app uses three.js for Vector3 / Quaternion calculations, there are no external dependencies (besides cupola.js) for the Cupola client.
+While the Cupola viewer app uses three.js for Vector3 / Quaternion calculations, there are no external dependencies (besides `cupola.js`) for the Cupola client.
 
+```html
 <script type='text/javascript' src='./path/to/cupola.js'></script>
+```
 
+```javascript
 var cupola = new Cupola({
 	"onConnect" : function() {
 		console.log("Rift is connected");
@@ -59,54 +64,56 @@ var cupola = new Cupola({
         console.log("Orientation: " + values.join(", "));
 	},
 });
-
 cupola.connect();
+```
+
+Don't forget to `connect()` it at the end!
 
 
 Cupola Client Configuration Options
-=======
+-----------------------------------
 
 The Cupola object accepts a single configuration object that can contain any of these properties. All config values are optional.
 
-onConnect - function; a callback invoked when the Cupola client starts receiving data from the Cupola viewer. 
+`onConnect` - function; a callback invoked when the Cupola client starts receiving data from the Cupola viewer. 
 
-onDisconnect - function; a callback invoked when the connection is lost.
+`onDisconnect` - function; a callback invoked when the connection is lost.
 
-onConfigUpdate - function; a callback invoked when configuration data is received from the server. A single argument is passed to this callback: a map of the metrics for the HMD. These metrics are needed when rendering any images for use on the Oculus Rift.
+`onConfigUpdate` - function; a callback invoked when configuration data is received from the server. A single argument is passed to this callback: a map of the metrics for the HMD. These metrics are needed when rendering any images for use on the Oculus Rift.
 
-onOrientationUpdate - function; a callback invoked when new orientation values are sent from the server. A single argument is passed to this callback: an object containing the "x", "y", "z", and "w" values of the orientation quaternion.
+`onOrientationUpdate` - function; a callback invoked when new orientation values are sent from the server. A single argument is passed to this callback: an object containing the "x", "y", "z", and "w" values of the orientation quaternion.
 
-debug - boolean; default is false.
+`debug` - boolean; default is false.
 
-timeout - numeric; number of milliseconds Cupola client will wait after not receiving a quaternion before invoking onDisconnect(). Default is 1000 ms.
+`timeout` - numeric; number of milliseconds Cupola client will wait after not receiving a quaternion before invoking `onDisconnect()`. Default is 1000 ms.
 
+Cupola Client Methods
+---------------------
 
+`connect` - allows the Cupola client object to invoke the callbacks when new messages are received from the Cupola viewer.
 
+`disconnect` - disconnects the Cupola client from the Cupola viewer. The viewer app will still send messages to the client but the client will not invoke any set callbacks.
 
+`isConnected` - returns true if the Cupola client is set to handle messages from the viewer, false otherwise
 
-## Cupola Client Methods
-
-connect - allows the Cupola client object to invoke the callbacks when new messages are received from the Cupola viewer.
-
-disconnect - disconnects the Cupola client from the Cupola viewer. The viewer app will still send messages to the client but the client will not invoke any set callbacks.
-
-isConnected - returns true if the Cupola client is set to handle messages from the viewer, false otherwise
-
-getOrientation - alternative to using the "onOrientationUpdate" callback; returns last known quaternion values received from viewer:
+`getOrientation` - alternative to using the `onOrientationUpdate` callback; returns last known quaternion values received from viewer:
 
 Example orientation object:
 
+```
 {
     "x" : 0.2329875,
     "y" : 1.1288273,
     "z" : 0.1837934,
     "w" : 0.0439387
 }
+```
 
-getConfiguration - alternative to using the "onConfigUpdate" callback; returns the metrics for the HMD. By default, if no config data has been received from the Cupola viewer, this will return the defauly config settings for the Oculus Rift Development Kit.
+`getConfiguration` - alternative to using the `onConfigUpdate` callback; returns the metrics for the HMD. By default, if no config data has been received from the Cupola viewer, this will return the defauly config settings for the Oculus Rift Development Kit.
 
 Example configuration object:
 
+```
 {
     "FOV"                       : 125.871,
     "hScreenSize"               : 0.14976,
@@ -118,33 +125,20 @@ Example configuration object:
     "hResolution"               : 1280,
     "vResolution"               : 720,
     "distortionK"               : [1, .22, .24, 0],
-    "chromaAbParameter"         : [0.996, -0.004, 1.014, 0]
+    "chromaAbParameter"         : [0.996, -0.004, 1.014, 0],
+    "gender"										: "Unspecified" // or "Male" or "Female",
+    "playerHeight"							: 1.77
 }
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Cupola API
+Cupola API
+----------
 
 If you're looking for more finely-tuned control of the head-tracking data coming from Cupola, here are the current types of messages that Cupola will deliver:
 
-New orientation data (quaternion).
-This is probably the most important message for your application. The Cupola viewer app will send this message whenever it gets an orientation update from the Rift hardware. 
+New orientation data (quaternion). This is probably the most important message for your application. The Cupola viewer app will send this message whenever it gets an orientation update from the Rift hardware. 
 
+```
 { 
 	"version": "1",
 	"msg": "quat",
@@ -155,11 +149,20 @@ This is probably the most important message for your application. The Cupola vie
 		"w": 1
 	}
 }
+```
 
+New configuration data:
 
+```
+{ 
+	"version": "1",
+	"msg": "config",
+	"data": { (configuration object as shown above) }
+}
+```
 
-
-## Credits
+Credits
+-------
 
 Thanks to the following libraries and projects that have made this project possible. Credit and copyright belong to the respective parties:
 

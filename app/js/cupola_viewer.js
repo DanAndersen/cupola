@@ -211,6 +211,8 @@ var helpObj = {
 
 var gettingStartedController = helpGuiFolder.add(helpObj, 'gettingStarted').name("Getting Started");
 
+helpGuiFolder.open();
+
 var configGuiFolder = gui.addFolder('Config');
 var uploadConfigFilesController = configGuiFolder.add(actionObj, 'uploadConfigFiles').name("Upload Config Files...");
 var sendConfigController = configGuiFolder.add(actionObj, 'sendConfig').name("Send Config to Simulation");
@@ -218,10 +220,6 @@ var sendConfigController = configGuiFolder.add(actionObj, 'sendConfig').name("Se
 var predictDtController = configGuiFolder.add(usb, 'mPredictDt', 0, 0.1).name("Predict time (seconds)");
 
 //===========================
-
-
-
-
 
 
 

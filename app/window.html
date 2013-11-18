@@ -8,10 +8,8 @@
   </head>
   <body>
     
-
     <!-- modal content -->
     <div id="modal-config-upload" class="modal">
-        <a href="http://www.google.com" target="_blank">Google</a>
 
         <h3>Drag and Drop Your Oculus Rift Configuration</h3>
 
@@ -30,35 +28,52 @@
 
     </div>
 
-
-
     <div id="modal-help-intro" class="modal">
-        <h3>Getting Started with Cupola</h3>
 
-        <a href="http://www.google.com" target="_blank">Google</a>
+        <h2>Getting started with Cupola VR Viewer</h2>
+
+        <ul>
+            <li>Enter the URL for a Cupola-supported virtual environment into the <b>URL</b> field and press Enter.</li>
+
+            <li>Make sure your Oculus Rift is connected and press <b>Connect to Rift</b>. Cupola VR Viewer will start to receive data directly from the Rift hardware and send it to the virtual environment.</li>
+
+            <li>You can make Cupola VR Viewer go in and out of fullscreen by pressing the <b>Toggle Fullscreen</b> button.</li>
+        </ul>
+
+        <h2>Example environments:</h2>
+
+        <p><b>Rings</b> -- a simple virtual environment with no motion controls, only head-tracking from the Rift.</p>
+
+        <p>In the simulation, press "toggle render mode" to switch to the Rift camera mode. In Cupola, click <b>Connect to Rift</b> to start using your Rift with the simulation.</p>
+
+        <p><b>Oculus Bridge First-Person</b> -- a Cupola-supported version of <a href="https://github.com/Instrument" target="_blank">Instrument's</a> "First Person" demo for <a href="https://github.com/Instrument/oculus-bridge" target="_blank">oculus-bridge</a>, to show how simple it is to connect Cupola with existing code.</p>
+
+        <p>In the simulation, press "toggle render mode" to switch to the Rift camera mode. In Cupola, click <b>Connect to Rift</b> to start using your Rift with the simulation.</p>
+
+        <p>While in Rift mode, use the WSAD keys to move around. Check the "help" button inside the simulation for additional control information.</p>
+
+        <h2>Cupola VR Viewer Configuration</h2>
+
+        <ul>
+            <li>To use your Oculus configuration data and send device/profile-specific data to the simulation, check out the <b>Config</b> section.</li>
+
+            <li>If the orientation data coming in from the Rift feels like it's consistently behind, try adjusting the <b>Predict time</b> slider in the <b>Config</b> section.</p>
+        </ul>
+
+
+        <h2>For more information</h2>
+
+        <p>For additional information, especially about how to integrate Cupola with your WebGL projects, consult the documentation at <a href="https://github.com/DanAndersen/cupola" target="_blank">https://github.com/DanAndersen/cupola</a>.</p>
+
+        <p>If you have any questions, suggestions, feedback, bug reports, issues of any sort, please don't hesitate to get in touch with me, either on GitHub or by email at <b>cupolavr@gmail.com</b>.</p>
+
 
     </div>
-
-
-
-
-
-
-
-
 
     <!-- preload the images -->
     <div style='display:none'>
         <img src='images/basic/x.png' alt='' />
     </div>
-
-
-
-
-
-
-
-
 
 
     <webview id="sim-webview" src="http://danandersen.bitbucket.org/first_person.html"></webview>
