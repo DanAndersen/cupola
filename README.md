@@ -4,6 +4,12 @@ Cupola VR Viewer
 
 A Chrome packaged app using the USB API to expose Oculus Rift HMD head-tracking data to remote Web applications.
 
+Get the app!
+------------
+
+[Download the Cupola VR Viewer from the Chrome Web Store](https://chrome.google.com/webstore/detail/cupola-vr-viewer/ngcnmbgbpmcjbogdkmpeloilgllfneac)
+
+
 Background
 ----------
 
@@ -23,7 +29,7 @@ Requirements
 
 - An Oculus Rift
 - Google Chrome (>= version 26)
-- The Cupola VR Viewer app, available on the Chrome Web Store
+- [The Cupola VR Viewer app](https://chrome.google.com/webstore/detail/cupola-vr-viewer/ngcnmbgbpmcjbogdkmpeloilgllfneac), available on the Chrome Web Store
 - A URL to a VR webpage using cupola.js to handle incoming orientation data
 
 Basic Usage
