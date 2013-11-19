@@ -178,6 +178,9 @@ var viewerGettingStarted = function() {
 	$('#modal-help-intro').modal();
 };
 
+
+
+
 //----------------------------
 
 // GUI
@@ -190,7 +193,7 @@ var actionObj = {
 	sendConfig: viewerSendConfig,
 	toggleConnect: viewerToggleConnect,
 	toggleFullscreen: viewerToggleFullscreen,
-	url: "google.com",
+	url: "",
 	updateDeviceConfig: viewerUpdateDeviceConfig,
 	uploadConfigFiles: viewerUploadConfigFiles
 };
@@ -203,13 +206,41 @@ var toggleFullscreenController = actionGuiFolder.add(actionObj, 'toggleFullscree
 
 actionGuiFolder.open();
 
+
+
+
+
+var goToUrl = function(url) {
+	urlController.setValue(url);
+	submitUrl(url);
+};
+
+var viewerSampleRings = function() {
+	goToUrl("http://danandersen.bitbucket.org/rings.html");
+};
+
+var viewerSampleFirstPerson = function() {
+	goToUrl("http://danandersen.bitbucket.org/first_person.html");
+};
+
+
+
+
+
+
+
+
 var helpGuiFolder = gui.addFolder('Help');
 
 var helpObj = {
-	gettingStarted: viewerGettingStarted
+	gettingStarted: viewerGettingStarted,
+	sampleRings: viewerSampleRings,
+	sampleFirstPerson: viewerSampleFirstPerson
 };
 
 var gettingStartedController = helpGuiFolder.add(helpObj, 'gettingStarted').name("Getting Started");
+helpGuiFolder.add(helpObj, 'sampleRings').name("Sample #1: 'Rings'");
+helpGuiFolder.add(helpObj, 'sampleFirstPerson').name("Sample #2: 'Oculus Bridge First Person'");
 
 helpGuiFolder.open();
 
@@ -300,3 +331,15 @@ var onKeyUp = function(e) {
 };
 
 document.addEventListener('keyup', onKeyUp, false);
+
+
+
+
+
+
+
+
+
+window.onload = function() {
+	viewerSampleRings();
+};

@@ -6,7 +6,7 @@ var mouse, time;
 var controls;
 var clock;
 
-var useRift = false;
+var useRift = true;
 
 var riftCam;
 
@@ -229,6 +229,9 @@ function init(){
   cupola.connect();
 
   riftCam = new THREE.OculusRiftEffect(renderer);
+
+  // make sure it loads up to fill the window right
+  onResize();
 }
 
 var geometry;

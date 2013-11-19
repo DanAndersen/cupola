@@ -36,6 +36,10 @@ Basic Usage
 - Plug in your Oculus Rift.
 - Press "Connect" in the Cupola VR Viewer app. In the provided examples, you may need to click "toggle render mode" to get into Rift mode.
 
+If you need to refresh the page, you can go to the URL address bar and press Enter.
+
+Note: due to security restrictions in Chrome packaged apps, `file:///` URLs are not supported. You must remotely host the WebGL simulation, or locally on `localhost`.
+
 Supporting Cupola in Your VR Application
 ----------------------------------------
 

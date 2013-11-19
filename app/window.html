@@ -52,12 +52,14 @@
 
         <p>While in Rift mode, use the WSAD keys to move around. Check the "help" button inside the simulation for additional control information.</p>
 
-        <h2>Cupola VR Viewer Configuration</h2>
+        <h2>Cupola VR Viewer Configuration (experimental)</h2>
 
         <ul>
             <li>To use your Oculus configuration data and send device/profile-specific data to the simulation, check out the <b>Config</b> section.</li>
 
             <li>If the orientation data coming in from the Rift feels like it's consistently behind, try adjusting the <b>Predict time</b> slider in the <b>Config</b> section.</p>
+
+            <li>Currently configuration import is experimental and does not persist after you shutdown Cupola VR Viewer.</li>
         </ul>
 
 
@@ -76,7 +78,13 @@
     </div>
 
 
-    <webview id="sim-webview" src="http://danandersen.bitbucket.org/first_person.html"></webview>
+    <!-- 
+        Two samples available at:
+            http://danandersen.bitbucket.org/rings.html
+            http://danandersen.bitbucket.org/first_person.html
+    -->
+
+    <webview id="sim-webview"></webview>
 
 
 
