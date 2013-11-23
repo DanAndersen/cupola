@@ -9,6 +9,7 @@ Get the app!
 
 [Download the Cupola VR Viewer from the Chrome Web Store](https://chrome.google.com/webstore/detail/cupola-vr-viewer/ngcnmbgbpmcjbogdkmpeloilgllfneac)
 
+Note: This has only been tested with Windows. It seems likely that it will not function properly on OSX at the moment, and Linux support may require more adjustment by the user. This is because of limitations of Chrome's USB API when it comes to HID devices on Unix-based OSes: http://developer.chrome.com/apps/app_usb.html#caveats
 
 Background
 ----------
@@ -29,6 +30,7 @@ Requirements
 
 - An Oculus Rift
 - Google Chrome (>= version 26)
+- Windows (or maybe Linux) -- OSX is currently not working, due to some issues with the Chrome USB API: http://developer.chrome.com/apps/app_usb.html#caveats
 - [The Cupola VR Viewer app](https://chrome.google.com/webstore/detail/cupola-vr-viewer/ngcnmbgbpmcjbogdkmpeloilgllfneac), available on the Chrome Web Store
 - A URL to a VR webpage using cupola.js to handle incoming orientation data
 
